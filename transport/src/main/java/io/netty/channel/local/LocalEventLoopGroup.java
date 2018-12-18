@@ -16,7 +16,12 @@
 package io.netty.channel.local;
 
 import io.netty.channel.EventLoop;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.MultithreadEventLoopGroup;
+import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.MultithreadEventExecutorGroup;
+import io.netty.util.concurrent.RejectedExecutionHandler;
+import io.netty.util.concurrent.RejectedExecutionHandlers;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
@@ -24,7 +29,7 @@ import java.util.concurrent.ThreadFactory;
 /**
  * {@link MultithreadEventLoopGroup} which must be used for the local transport.
  */
-public class LocalEventLoopGroup extends MultithreadEventLoopGroup {
+public class LocalEventLoopGroup extends MultithreadEventExecutorGroup implements EventLoopGroup {
 
     /**
      * Create a new instance with the default number of threads.
@@ -39,7 +44,36 @@ public class LocalEventLoopGroup extends MultithreadEventLoopGroup {
      * @param nThreads          the number of threads to use
      */
     public LocalEventLoopGroup(int nThreads) {
-        this(nThreads, (ThreadFactory) null);
+        this(nThreads, (ThreadFactory) null, LocalEventLoop.DEFAULT_MAX_PENDING_EXECUTOR_TASKS,
+                RejectedExecutionHandlers.reject());
+    }
+
+    /**
+     * Create a new instance
+     *
+     * @param nThreads          the number of threads to use
+     * @param threadFactory     the {@link ThreadFactory} or {@code null} to use the default
+     * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
+     * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
+     */
+    public LocalEventLoopGroup(int nThreads, ThreadFactory threadFactory, int maxPendingTasks,
+                               RejectedExecutionHandler rejectedHandler) {
+        super(nThreads == 0 ? MultithreadEventLoopGroup.DEFAULT_EVENT_LOOP_THREADS : nThreads,
+                threadFactory, maxPendingTasks, rejectedHandler);
+    }
+
+    /**
+     * Create a new instance
+     *
+     * @param nThreads          the number of threads to use
+     * @param executor          the Executor to use, or {@code null} if the default should be used.
+     * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
+     * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
+     */
+    public LocalEventLoopGroup(int nThreads, Executor executor, int maxPendingTasks,
+                               RejectedExecutionHandler rejectedHandler) {
+        super(nThreads == 0 ? MultithreadEventLoopGroup.DEFAULT_EVENT_LOOP_THREADS : nThreads,
+                executor, maxPendingTasks, rejectedHandler);
     }
 
     /**
@@ -49,7 +83,8 @@ public class LocalEventLoopGroup extends MultithreadEventLoopGroup {
      * @param threadFactory     the {@link ThreadFactory} or {@code null} to use the default
      */
     public LocalEventLoopGroup(int nThreads, ThreadFactory threadFactory) {
-        super(nThreads, threadFactory);
+        this(nThreads, threadFactory,
+                LocalEventLoop.DEFAULT_MAX_PENDING_EXECUTOR_TASKS, RejectedExecutionHandlers.reject());
     }
 
     /**
@@ -59,11 +94,20 @@ public class LocalEventLoopGroup extends MultithreadEventLoopGroup {
      * @param executor          the Executor to use, or {@code null} if the default should be used.
      */
     public LocalEventLoopGroup(int nThreads, Executor executor) {
-        super(nThreads, executor);
+        this(nThreads, executor,
+                LocalEventLoop.DEFAULT_MAX_PENDING_EXECUTOR_TASKS, RejectedExecutionHandlers.reject());
     }
 
     @Override
-    protected EventLoop newChild(Executor executor, Object... args) throws Exception {
-        return new LocalEventLoop(this, executor);
+    public EventLoop next() {
+        return (EventLoop) super.next();
+    }
+
+    @Override
+    protected EventExecutor newChild(Executor executor, int maxPendingTasks,
+                                     RejectedExecutionHandler rejectedExecutionHandler,
+                                     Object... args) {
+        assert args.length == 0;
+        return new LocalEventLoop(this, executor, maxPendingTasks, rejectedExecutionHandler);
     }
 }

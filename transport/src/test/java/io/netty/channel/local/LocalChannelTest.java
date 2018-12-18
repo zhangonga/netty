@@ -28,13 +28,13 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.SingleThreadEventLoop;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
+import io.netty.util.concurrent.RejectedExecutionHandler;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import org.junit.AfterClass;
@@ -229,12 +229,12 @@ public class LocalChannelTest {
         final CountDownLatch closeLatch = new CountDownLatch(1);
         final EventLoopGroup clientGroup = new LocalEventLoopGroup(1) {
             @Override
-            protected EventLoop newChild(Executor threadFactory, Object... args)
-                    throws Exception {
-                return new LocalEventLoop(this, threadFactory) {
+            protected EventExecutor newChild(Executor executor, int maxPendingTasks,
+                                             RejectedExecutionHandler rejectedExecutionHandler, Object... args) {
+                return new LocalEventLoop(this, executor, maxPendingTasks, rejectedExecutionHandler) {
                     @Override
                     protected void run() {
-                        for (;;) {
+                        do {
                             Runnable task = takeTask();
                             if (task != null) {
                                 /* Only slow down the anonymous class in LocalChannel#doRegister() */
@@ -248,11 +248,7 @@ public class LocalChannelTest {
                                 task.run();
                                 updateLastExecutionTime();
                             }
-
-                            if (confirmShutdown()) {
-                                break;
-                            }
-                        }
+                        } while (!confirmShutdown());
                     }
                 };
             }

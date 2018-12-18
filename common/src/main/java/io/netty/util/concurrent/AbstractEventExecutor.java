@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.Callable;
-import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,17 +58,17 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
     }
 
     @Override
-    public boolean inEventLoop() {
+    public final boolean inEventLoop() {
         return inEventLoop(Thread.currentThread());
     }
 
     @Override
-    public Iterator<EventExecutor> iterator() {
+    public final Iterator<EventExecutor> iterator() {
         return selfCollection.iterator();
     }
 
     @Override
-    public Future<?> shutdownGracefully() {
+    public final Future<?> shutdownGracefully() {
         return shutdownGracefully(DEFAULT_SHUTDOWN_QUIET_PERIOD, DEFAULT_SHUTDOWN_TIMEOUT, TimeUnit.SECONDS);
     }
 
@@ -110,59 +110,59 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
     }
 
     @Override
-    public Future<?> submit(Runnable task) {
+    public final Future<?> submit(Runnable task) {
         return (Future<?>) super.submit(task);
     }
 
     @Override
-    public <T> Future<T> submit(Runnable task, T result) {
+    public final <T> Future<T> submit(Runnable task, T result) {
         return (Future<T>) super.submit(task, result);
     }
 
     @Override
-    public <T> Future<T> submit(Callable<T> task) {
+    public final <T> Future<T> submit(Callable<T> task) {
         return (Future<T>) super.submit(task);
     }
 
     @Override
-    protected final <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
-        return new PromiseTask<T>(this, runnable, value);
+    protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
+        return newRunnableFuture(this.<T>newPromise(), runnable, value);
     }
 
     @Override
-    protected final <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
-        return new PromiseTask<T>(this, callable);
-    }
-
-    @Override
-    public ScheduledFuture<?> schedule(Runnable command, long delay,
-                                       TimeUnit unit) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
-        throw new UnsupportedOperationException();
+    protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
+        return newRunnableFuture(this.<T>newPromise(), callable);
     }
 
     /**
      * Try to execute the given {@link Runnable} and just log if it throws a {@link Throwable}.
      */
-    protected static void safeExecute(Runnable task) {
+    static void safeExecute(Runnable task) {
         try {
             task.run();
         } catch (Throwable t) {
             logger.warn("A task raised an exception. Task: {}", task, t);
         }
+    }
+
+    /**
+     * Returns a new {@link RunnableFuture} build on top of the given {@link Promise} and {@link Callable}.
+     *
+     * This can be used if you want to override {@link #newTaskFor(Callable)} and return a different
+     * {@link RunnableFuture}.
+     */
+    private static <V> RunnableFuture<V> newRunnableFuture(Promise<V> promise, Callable<V> task) {
+        return new RunnableFutureAdapter<V>(promise, task);
+    }
+
+    /**
+     * Returns a new {@link RunnableFuture} build on top of the given {@link Promise} and {@link Runnable} and
+     * {@code value}.
+     *
+     * This can be used if you want to override {@link #newTaskFor(Runnable, V)} and return a different
+     * {@link RunnableFuture}.
+     */
+    private static <V> RunnableFuture<V> newRunnableFuture(Promise<V> promise, Runnable task, V value) {
+        return new RunnableFutureAdapter<V>(promise, Executors.callable(task, value));
     }
 }

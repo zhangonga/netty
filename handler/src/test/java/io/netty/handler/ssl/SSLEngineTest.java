@@ -28,8 +28,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.nio.NioHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -695,7 +696,8 @@ public abstract class SSLEngineTest {
         sb = new ServerBootstrap();
         cb = new Bootstrap();
 
-        sb.group(new NioEventLoopGroup(), new NioEventLoopGroup());
+        sb.group(new MultithreadEventLoopGroup(NioHandler.newFactory()),
+                new MultithreadEventLoopGroup(NioHandler.newFactory()));
         sb.channel(NioServerSocketChannel.class);
         sb.childHandler(new ChannelInitializer<Channel>() {
             @Override
@@ -739,7 +741,7 @@ public abstract class SSLEngineTest {
             }
         });
 
-        cb.group(new NioEventLoopGroup());
+        cb.group(new MultithreadEventLoopGroup(NioHandler.newFactory()));
         cb.channel(NioSocketChannel.class);
         cb.handler(new ChannelInitializer<Channel>() {
             @Override
@@ -842,7 +844,8 @@ public abstract class SSLEngineTest {
         sb = new ServerBootstrap();
         cb = new Bootstrap();
 
-        sb.group(new NioEventLoopGroup(), new NioEventLoopGroup());
+        sb.group(new MultithreadEventLoopGroup(NioHandler.newFactory()),
+                new MultithreadEventLoopGroup(NioHandler.newFactory()));
         sb.channel(NioServerSocketChannel.class);
         sb.childHandler(new ChannelInitializer<Channel>() {
             @Override
@@ -881,7 +884,7 @@ public abstract class SSLEngineTest {
             }
         });
 
-        cb.group(new NioEventLoopGroup());
+        cb.group(new MultithreadEventLoopGroup(NioHandler.newFactory()));
         cb.channel(NioSocketChannel.class);
         cb.handler(new ChannelInitializer<Channel>() {
             @Override
@@ -1004,7 +1007,8 @@ public abstract class SSLEngineTest {
         sb = new ServerBootstrap();
         cb = new Bootstrap();
 
-        sb.group(new NioEventLoopGroup(), new NioEventLoopGroup());
+        sb.group(new MultithreadEventLoopGroup(NioHandler.newFactory()),
+                new MultithreadEventLoopGroup(NioHandler.newFactory()));
         sb.channel(NioServerSocketChannel.class);
         sb.childHandler(new ChannelInitializer<Channel>() {
             @Override
@@ -1046,7 +1050,7 @@ public abstract class SSLEngineTest {
             }
         });
 
-        cb.group(new NioEventLoopGroup());
+        cb.group(new MultithreadEventLoopGroup(NioHandler.newFactory()));
         cb.channel(NioSocketChannel.class);
         cb.handler(new ChannelInitializer<Channel>() {
             @Override
@@ -1240,7 +1244,7 @@ public abstract class SSLEngineTest {
                                         .ciphers(ciphers())
                                         .build();
         sb = new ServerBootstrap()
-                .group(new NioEventLoopGroup(1))
+                .group(new MultithreadEventLoopGroup(1, NioHandler.newFactory()))
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -1296,7 +1300,7 @@ public abstract class SSLEngineTest {
                                         .build();
 
         cb = new Bootstrap();
-        cb.group(new NioEventLoopGroup(1))
+        cb.group(new MultithreadEventLoopGroup(1, NioHandler.newFactory()))
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -1578,7 +1582,8 @@ public abstract class SSLEngineTest {
         sb = new ServerBootstrap();
         cb = new Bootstrap();
 
-        sb.group(new NioEventLoopGroup(), new NioEventLoopGroup());
+        sb.group(new MultithreadEventLoopGroup(NioHandler.newFactory()),
+                new MultithreadEventLoopGroup(NioHandler.newFactory()));
         sb.channel(NioServerSocketChannel.class);
         sb.childHandler(new ChannelInitializer<Channel>() {
             @Override
@@ -1603,7 +1608,7 @@ public abstract class SSLEngineTest {
             }
         });
 
-        cb.group(new NioEventLoopGroup());
+        cb.group(new MultithreadEventLoopGroup(NioHandler.newFactory()));
         cb.channel(NioSocketChannel.class);
         cb.handler(new ChannelInitializer<Channel>() {
             @Override
@@ -1652,7 +1657,8 @@ public abstract class SSLEngineTest {
                                  .ciphers(ciphers()).build();
 
         sb = new ServerBootstrap();
-        sb.group(new NioEventLoopGroup(), new NioEventLoopGroup());
+        sb.group(new MultithreadEventLoopGroup(NioHandler.newFactory()),
+                new MultithreadEventLoopGroup(NioHandler.newFactory()));
         sb.channel(NioServerSocketChannel.class);
 
         final Promise<String> promise = sb.config().group().next().newPromise();
@@ -1709,7 +1715,7 @@ public abstract class SSLEngineTest {
                 .sslContextProvider(clientSslContextProvider())
                 .protocols(protocols()).ciphers(ciphers()).build();
         cb = new Bootstrap();
-        cb.group(new NioEventLoopGroup());
+        cb.group(new MultithreadEventLoopGroup(NioHandler.newFactory()));
         cb.channel(NioSocketChannel.class);
         clientChannel = cb.handler(new ChannelInitializer<Channel>() {
             @Override

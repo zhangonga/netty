@@ -16,15 +16,17 @@
 package io.netty.channel.local;
 
 import io.netty.channel.Channel;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SingleThreadEventLoop;
-import io.netty.util.concurrent.DefaultThreadFactory;
+import io.netty.util.concurrent.RejectedExecutionHandler;
+import io.netty.util.concurrent.SingleThreadEventExecutor;
 import io.netty.util.internal.StringUtil;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadFactory;
 
-public class LocalEventLoop extends SingleThreadEventLoop {
+class LocalEventLoop extends SingleThreadEventExecutor implements EventLoop {
+
+    static final int DEFAULT_MAX_PENDING_EXECUTOR_TASKS = SingleThreadEventExecutor.DEFAULT_MAX_PENDING_EXECUTOR_TASKS;
 
     private static LocalChannelUnsafe cast(Channel channel) {
         Channel.Unsafe unsafe = channel.unsafe();
@@ -48,28 +50,9 @@ public class LocalEventLoop extends SingleThreadEventLoop {
         }
     };
 
-    public LocalEventLoop() {
-        this((EventLoopGroup) null);
-    }
-
-    public LocalEventLoop(ThreadFactory threadFactory) {
-        this(null, threadFactory);
-    }
-
-    public LocalEventLoop(Executor executor) {
-        this(null, executor);
-    }
-
-    public LocalEventLoop(EventLoopGroup parent) {
-        this(parent, new DefaultThreadFactory(LocalEventLoop.class));
-    }
-
-    public LocalEventLoop(EventLoopGroup parent, ThreadFactory threadFactory) {
-        super(parent, threadFactory, true);
-    }
-
-    public LocalEventLoop(EventLoopGroup parent, Executor executor) {
-        super(parent, executor, true);
+    LocalEventLoop(EventLoopGroup parent, Executor executor,
+                   int maxTasks, RejectedExecutionHandler rejectedExecutionHandler) {
+        super(parent, executor, maxTasks, rejectedExecutionHandler);
     }
 
     @Override
@@ -78,17 +61,12 @@ public class LocalEventLoop extends SingleThreadEventLoop {
     }
 
     @Override
-    protected void run() {
-        for (;;) {
-            Runnable task = takeTask();
-            if (task != null) {
-                task.run();
-                updateLastExecutionTime();
-            }
+    public EventLoopGroup parent() {
+        return (EventLoopGroup) super.parent();
+    }
 
-            if (confirmShutdown()) {
-                break;
-            }
-        }
+    @Override
+    public EventLoop next() {
+        return (EventLoop) super.next();
     }
 }
