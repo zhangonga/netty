@@ -15,12 +15,11 @@
  */
 package io.netty.resolver.dns;
 
-import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.local.LocalEventLoopGroup;
 import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 
-import io.netty.channel.nio.NioHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.NetUtil;
 import org.junit.Test;
 
@@ -76,7 +75,7 @@ public class DefaultDnsCacheTest {
     }
 
     private static void testExpireWithTTL0(int days) {
-        EventLoopGroup group = new MultithreadEventLoopGroup(1, NioHandler.newFactory());
+        EventLoopGroup group = new NioEventLoopGroup(1);
 
         try {
             EventLoop loop = group.next();
@@ -89,7 +88,7 @@ public class DefaultDnsCacheTest {
 
     @Test
     public void testExpireWithToBigMinTTL() {
-        EventLoopGroup group = new MultithreadEventLoopGroup(1, NioHandler.newFactory());
+        EventLoopGroup group = new NioEventLoopGroup(1);
 
         try {
             EventLoop loop = group.next();

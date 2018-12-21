@@ -28,7 +28,6 @@ import java.nio.channels.ClosedChannelException;
 import java.util.Map;
 import java.util.Random;
 
-import io.netty.channel.MultithreadEventLoopGroup;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -44,7 +43,7 @@ public class EpollSocketChannelConfigTest {
     @BeforeClass
     public static void beforeClass() {
         rand = new Random();
-        group = new MultithreadEventLoopGroup(1, EpollHandler.newFactory());
+        group = new EpollEventLoopGroup(1);
     }
 
     @AfterClass

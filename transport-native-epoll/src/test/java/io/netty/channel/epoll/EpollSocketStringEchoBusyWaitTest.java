@@ -18,7 +18,6 @@ package io.netty.channel.epoll;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.netty.channel.MultithreadEventLoopGroup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -40,8 +39,8 @@ public class EpollSocketStringEchoBusyWaitTest extends SocketStringEchoTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        EPOLL_LOOP = new MultithreadEventLoopGroup(2, new DefaultThreadFactory("testsuite-epoll-busy-wait", true),
-                EpollHandler.newFactory(0, new SelectStrategyFactory() {
+        EPOLL_LOOP = new EpollEventLoopGroup(2, new DefaultThreadFactory("testsuite-epoll-busy-wait", true),
+                new SelectStrategyFactory() {
                     @Override
                     public SelectStrategy newSelectStrategy() {
                         return new SelectStrategy() {
@@ -51,7 +50,7 @@ public class EpollSocketStringEchoBusyWaitTest extends SocketStringEchoTest {
                             }
                         };
                     }
-                }));
+                });
     }
 
     @AfterClass

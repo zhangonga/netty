@@ -20,7 +20,6 @@ import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.MultithreadEventLoopGroup;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,7 +35,7 @@ public class KQueueChannelConfigTest {
 
     @Test
     public void testOptionGetThrowsChannelException() throws Exception {
-        EventLoopGroup group = new MultithreadEventLoopGroup(1, KQueueHandler.newFactory());
+        KQueueEventLoopGroup group = new KQueueEventLoopGroup(1);
         try {
             KQueueSocketChannel channel = new KQueueSocketChannel(group.next());
             channel.config().getSoLinger();
@@ -54,7 +53,7 @@ public class KQueueChannelConfigTest {
 
     @Test
     public void testOptionSetThrowsChannelException() throws Exception {
-        EventLoopGroup group = new MultithreadEventLoopGroup(1, KQueueHandler.newFactory());
+        KQueueEventLoopGroup group = new KQueueEventLoopGroup(1);
         try {
             KQueueSocketChannel channel = new KQueueSocketChannel(group.next());
             channel.config().setKeepAlive(true);
@@ -73,7 +72,7 @@ public class KQueueChannelConfigTest {
     // See https://github.com/netty/netty/issues/7159
     @Test
     public void testSoLingerNoAssertError() throws Exception {
-        EventLoopGroup group = new MultithreadEventLoopGroup(1, KQueueHandler.newFactory());
+        EventLoopGroup group = new KQueueEventLoopGroup(1);
 
         try {
             Bootstrap bootstrap = new Bootstrap();
