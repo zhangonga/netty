@@ -388,16 +388,6 @@ public class ChannelOutboundBufferTest {
         final SingleThreadEventExecutor executor = new SingleThreadEventExecutor(
                 null, new DefaultThreadFactory("executorPool"),
                 1, RejectedExecutionHandlers.reject()) {
-            @Override
-            protected void run() {
-                do {
-                    Runnable task = takeTask();
-                    if (task != null) {
-                        task.run();
-                        updateLastExecutionTime();
-                    }
-                } while (!confirmShutdown());
-            }
 
             @Override
             protected Queue<Runnable> newTaskQueue(int maxPendingTasks) {

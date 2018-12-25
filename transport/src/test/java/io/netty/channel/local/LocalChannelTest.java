@@ -28,10 +28,11 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.SingleThreadEventLoop;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.RejectedExecutionHandler;
@@ -228,19 +229,23 @@ public class LocalChannelTest {
     public void localChannelRaceCondition() throws Exception {
         final CountDownLatch closeLatch = new CountDownLatch(1);
         final EventLoopGroup clientGroup = new LocalEventLoopGroup(1) {
+
             @Override
-            protected EventExecutor newChild(Executor executor, int maxPendingTasks,
-                                             RejectedExecutionHandler rejectedExecutionHandler, Object... args) {
-                return new LocalEventLoop(this, executor, maxPendingTasks, rejectedExecutionHandler) {
+            protected EventLoop newChild(
+                    Executor executor, int maxPendingTasks, RejectedExecutionHandler rejectedExecutionHandler,
+                    SingleThreadEventLoop.IoHandler ioHandler, int maxTasksPerRun, Object... args) {
+                return new SingleThreadEventLoop(this, executor, ioHandler, maxPendingTasks, rejectedExecutionHandler) {
+
                     @Override
                     protected void run() {
                         do {
-                            Runnable task = takeTask();
+                            runIo();
+                            Runnable task = pollTask();
                             if (task != null) {
                                 /* Only slow down the anonymous class in LocalChannel#doRegister() */
                                 if (task.getClass().getEnclosingClass() == LocalChannel.class) {
                                     try {
-                                        closeLatch.await();
+                                        closeLatch.await(1, TimeUnit.SECONDS);
                                     } catch (InterruptedException e) {
                                         throw new Error(e);
                                     }

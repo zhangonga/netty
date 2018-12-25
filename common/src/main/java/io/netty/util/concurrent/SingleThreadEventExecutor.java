@@ -589,6 +589,7 @@ public class SingleThreadEventExecutor extends AbstractScheduledEventExecutor im
                 }
             }
             if (STATE_UPDATER.compareAndSet(this, oldState, newState)) {
+                //System.err.println(oldState + " " + newState + " " + this);
                 break;
             }
         }
@@ -700,6 +701,7 @@ public class SingleThreadEventExecutor extends AbstractScheduledEventExecutor im
      */
     protected final boolean confirmShutdown() {
         assert inEventLoop();
+
         if (!isShuttingDown()) {
             return false;
         }

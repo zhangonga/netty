@@ -15,21 +15,19 @@
  */
 package io.netty.channel.local;
 
-import io.netty.channel.EventLoop;
-import io.netty.channel.EventLoopGroup;
 import io.netty.channel.MultithreadEventLoopGroup;
-import io.netty.util.concurrent.EventExecutor;
-import io.netty.util.concurrent.MultithreadEventExecutorGroup;
 import io.netty.util.concurrent.RejectedExecutionHandler;
-import io.netty.util.concurrent.RejectedExecutionHandlers;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
 /**
  * {@link MultithreadEventLoopGroup} which must be used for the local transport.
+ *
+ * @deprecated use {@link MultithreadEventLoopGroup} together with {@link LocalHandler}.
  */
-public class LocalEventLoopGroup extends MultithreadEventExecutorGroup implements EventLoopGroup {
+@Deprecated
+public class LocalEventLoopGroup extends MultithreadEventLoopGroup {
 
     /**
      * Create a new instance with the default number of threads.
@@ -44,8 +42,7 @@ public class LocalEventLoopGroup extends MultithreadEventExecutorGroup implement
      * @param nThreads          the number of threads to use
      */
     public LocalEventLoopGroup(int nThreads) {
-        this(nThreads, (ThreadFactory) null, LocalEventLoop.DEFAULT_MAX_PENDING_EXECUTOR_TASKS,
-                RejectedExecutionHandlers.reject());
+        this(nThreads, (ThreadFactory) null);
     }
 
     /**
@@ -58,8 +55,7 @@ public class LocalEventLoopGroup extends MultithreadEventExecutorGroup implement
      */
     public LocalEventLoopGroup(int nThreads, ThreadFactory threadFactory, int maxPendingTasks,
                                RejectedExecutionHandler rejectedHandler) {
-        super(nThreads == 0 ? MultithreadEventLoopGroup.DEFAULT_EVENT_LOOP_THREADS : nThreads,
-                threadFactory, maxPendingTasks, rejectedHandler);
+        super(nThreads, threadFactory, LocalHandler.newFactory(), maxPendingTasks, rejectedHandler);
     }
 
     /**
@@ -72,8 +68,7 @@ public class LocalEventLoopGroup extends MultithreadEventExecutorGroup implement
      */
     public LocalEventLoopGroup(int nThreads, Executor executor, int maxPendingTasks,
                                RejectedExecutionHandler rejectedHandler) {
-        super(nThreads == 0 ? MultithreadEventLoopGroup.DEFAULT_EVENT_LOOP_THREADS : nThreads,
-                executor, maxPendingTasks, rejectedHandler);
+        super(nThreads, executor, LocalHandler.newFactory(), maxPendingTasks, rejectedHandler);
     }
 
     /**
@@ -83,8 +78,7 @@ public class LocalEventLoopGroup extends MultithreadEventExecutorGroup implement
      * @param threadFactory     the {@link ThreadFactory} or {@code null} to use the default
      */
     public LocalEventLoopGroup(int nThreads, ThreadFactory threadFactory) {
-        this(nThreads, threadFactory,
-                LocalEventLoop.DEFAULT_MAX_PENDING_EXECUTOR_TASKS, RejectedExecutionHandlers.reject());
+        super(nThreads, threadFactory, LocalHandler.newFactory());
     }
 
     /**
@@ -94,20 +88,6 @@ public class LocalEventLoopGroup extends MultithreadEventExecutorGroup implement
      * @param executor          the Executor to use, or {@code null} if the default should be used.
      */
     public LocalEventLoopGroup(int nThreads, Executor executor) {
-        this(nThreads, executor,
-                LocalEventLoop.DEFAULT_MAX_PENDING_EXECUTOR_TASKS, RejectedExecutionHandlers.reject());
-    }
-
-    @Override
-    public EventLoop next() {
-        return (EventLoop) super.next();
-    }
-
-    @Override
-    protected EventExecutor newChild(Executor executor, int maxPendingTasks,
-                                     RejectedExecutionHandler rejectedExecutionHandler,
-                                     Object... args) {
-        assert args.length == 0;
-        return new LocalEventLoop(this, executor, maxPendingTasks, rejectedExecutionHandler);
+        super(nThreads, executor, LocalHandler.newFactory());
     }
 }
