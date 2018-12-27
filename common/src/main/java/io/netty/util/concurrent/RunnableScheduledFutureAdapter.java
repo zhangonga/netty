@@ -30,9 +30,9 @@ import java.util.concurrent.atomic.AtomicLong;
 @SuppressWarnings("ComparableImplementedButEqualsNotOverridden")
 final class RunnableScheduledFutureAdapter<V> implements RunnableScheduledFuture<V>,
         AbstractScheduledEventExecutor.RunnableScheduledFutureNode<V> {
-    private static final AtomicLong nextTaskId = new AtomicLong();
+    private static final AtomicLong NEXT_TASK_ID = new AtomicLong();
 
-    private final long id = nextTaskId.getAndIncrement();
+    private final long id = NEXT_TASK_ID.getAndIncrement();
     private long deadlineNanos;
     /* 0 - no repeat, >0 - repeat at fixed rate, <0 - repeat with fixed delay */
     private final long periodNanos;

@@ -203,7 +203,7 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
                                      SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory,
                                      int maxPendingTasks, RejectedExecutionHandler rejectedHandler,
                                      int maxTasksPerRun, Object... args) {
-        super(nThreads == 0 ? DEFAULT_EVENT_LOOP_THREADS : nThreads, executor,
+        super(pickThreadCount(nThreads), executor,
                 maxPendingTasks, rejectedHandler, merge(ioHandlerFactory, maxTasksPerRun, args));
     }
 
@@ -226,8 +226,15 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
                                      SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory,
                                      int maxPendingTasks, RejectedExecutionHandler rejectedHandler,
                                      int maxTasksPerRun, Object... args) {
-        super(nThreads == 0 ? DEFAULT_EVENT_LOOP_THREADS : nThreads, threadFactory,
+        super(pickThreadCount(nThreads), threadFactory,
                 maxPendingTasks, rejectedHandler, merge(ioHandlerFactory, maxTasksPerRun, args));
+    }
+
+    /**
+     * Return the number of threads to use based on the given {@code nThreads}.
+     */
+    protected static int pickThreadCount(int nThreads) {
+        return nThreads == 0 ? DEFAULT_EVENT_LOOP_THREADS : nThreads;
     }
 
     private static Object[] merge(SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory,
