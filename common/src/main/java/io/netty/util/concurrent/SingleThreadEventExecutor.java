@@ -371,7 +371,7 @@ public class SingleThreadEventExecutor extends AbstractScheduledEventExecutor im
             } while ((task = pollTask()) != null);
         } while (!fetchedAll); // keep on processing until we fetched all scheduled tasks.
 
-        lastExecutionTime = nanoTime();
+        updateLastExecutionTime();
         return true;
     }
 
@@ -402,7 +402,10 @@ public class SingleThreadEventExecutor extends AbstractScheduledEventExecutor im
             }
         } while (!fetchedAll && processedTasks < maxTasks); // keep on processing until we fetched all scheduled tasks.
 
-        lastExecutionTime = nanoTime();
+        if (processedTasks > 0) {
+            // Only call if we at least executed one task.
+            updateLastExecutionTime();
+        }
         return processedTasks;
     }
 
@@ -412,6 +415,7 @@ public class SingleThreadEventExecutor extends AbstractScheduledEventExecutor im
      * This method must be called from the {@link EventExecutor} thread.
      */
     protected final long delayNanos(long currentTimeNanos) {
+        assert inEventLoop();
         RunnableScheduledFuture<?> scheduledTask = peekScheduledTask();
         if (scheduledTask == null) {
             return SCHEDULE_PURGE_INTERVAL;
@@ -437,10 +441,9 @@ public class SingleThreadEventExecutor extends AbstractScheduledEventExecutor im
 
     /**
      * Updates the internal timestamp that tells when a submitted task was executed most recently.
-     * {@link #runAllTasks(int)} updates this timestamp automatically, and thus there's
-     * usually no need to call this method.  However, if you take the tasks manually using {@link #takeTask()} or
-     * {@link #pollTask()}, you have to call this method at the end of task execution loop for accurate quiet period
-     * checks.
+     * {@link #runAllTasks(int)} updates this timestamp automatically, and thus there's usually no need to call this
+     * method.  However, if you take the tasks manually using {@link #takeTask()} or {@link #pollTask()}, you have to
+     * call this method at the end of task execution loop if you execute a task for accurate quiet period checks.
      *
      * This method must be called from the {@link EventExecutor} thread.
      */

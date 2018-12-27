@@ -206,6 +206,7 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
 
     @Override
     protected void run() {
+        assert inEventLoop();
         do {
             runIo();
             runAllTasks(maxTasksPerRun);
