@@ -17,6 +17,9 @@ package io.netty.channel.epoll;
 
 import io.netty.channel.Channel;
 import io.netty.channel.DefaultSelectStrategyFactory;
+import io.netty.channel.IoExecutionContext;
+import io.netty.channel.IoHandler;
+import io.netty.channel.IoHandlerFactory;
 import io.netty.channel.SelectStrategy;
 
 import io.netty.channel.SelectStrategyFactory;
@@ -41,9 +44,9 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import static java.lang.Math.min;
 
 /**
- * {@link SingleThreadEventLoop.IoHandler} which uses epoll under the covers. Only works on Linux!
+ * {@link IoHandler} which uses epoll under the covers. Only works on Linux!
  */
-public class EpollHandler implements SingleThreadEventLoop.IoHandler {
+public class EpollHandler implements IoHandler {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(EpollHandler.class);
     private static final AtomicIntegerFieldUpdater<EpollHandler> WAKEN_UP_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(EpollHandler.class, "wakenUp");
@@ -148,27 +151,27 @@ public class EpollHandler implements SingleThreadEventLoop.IoHandler {
     }
 
     /**
-     * Returns a new {@link SingleThreadEventLoop.IoHandlerFactory} that creates {@link EpollHandler} instances.
+     * Returns a new {@link IoHandlerFactory} that creates {@link EpollHandler} instances.
      */
-    public static SingleThreadEventLoop.IoHandlerFactory newFactory() {
-        return new SingleThreadEventLoop.IoHandlerFactory() {
+    public static IoHandlerFactory newFactory() {
+        return new IoHandlerFactory() {
             @Override
-            public SingleThreadEventLoop.IoHandler newHandler() {
+            public IoHandler newHandler() {
                 return new EpollHandler();
             }
         };
     }
 
     /**
-     * Returns a new {@link SingleThreadEventLoop.IoHandlerFactory} that creates {@link EpollHandler} instances.
+     * Returns a new {@link IoHandlerFactory} that creates {@link EpollHandler} instances.
      */
-    public static SingleThreadEventLoop.IoHandlerFactory newFactory(final int maxEvents,
-                                                                    final SelectStrategyFactory selectStrategyFactory) {
+    public static IoHandlerFactory newFactory(final int maxEvents,
+                                              final SelectStrategyFactory selectStrategyFactory) {
         ObjectUtil.checkPositiveOrZero(maxEvents, "maxEvents");
         ObjectUtil.checkNotNull(selectStrategyFactory, "selectStrategyFactory");
-        return new SingleThreadEventLoop.IoHandlerFactory() {
+        return new IoHandlerFactory() {
             @Override
-            public SingleThreadEventLoop.IoHandler newHandler() {
+            public IoHandler newHandler() {
                 return new EpollHandler(maxEvents, selectStrategyFactory.newSelectStrategy());
             }
         };
@@ -262,7 +265,7 @@ public class EpollHandler implements SingleThreadEventLoop.IoHandler {
         }
     }
 
-    private int epollWait(SingleThreadEventLoop.ExecutionContext context, boolean oldWakeup) throws IOException {
+    private int epollWait(IoExecutionContext context, boolean oldWakeup) throws IOException {
         // If a task was submitted when wakenUp value was 1, the task didn't get a chance to produce wakeup event.
         // So we need to check task queue again before calling epoll_wait. If we don't, the task might be pended
         // until epoll_wait was timed out. It might be pended until idle timeout if IdleStateHandler existed
@@ -295,7 +298,7 @@ public class EpollHandler implements SingleThreadEventLoop.IoHandler {
     }
 
     @Override
-    public final int run(SingleThreadEventLoop.ExecutionContext context) {
+    public final int run(IoExecutionContext context) {
         int handled = 0;
         try {
             int strategy = selectStrategy.calculateStrategy(selectNowSupplier, context.isTaskReady());

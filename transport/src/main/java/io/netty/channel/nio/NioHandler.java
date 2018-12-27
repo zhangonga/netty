@@ -19,9 +19,11 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelException;
 import io.netty.channel.DefaultSelectStrategyFactory;
 import io.netty.channel.EventLoopException;
+import io.netty.channel.IoExecutionContext;
+import io.netty.channel.IoHandler;
+import io.netty.channel.IoHandlerFactory;
 import io.netty.channel.SelectStrategy;
 import io.netty.channel.SelectStrategyFactory;
-import io.netty.channel.SingleThreadEventLoop;
 import io.netty.util.IntSupplier;
 import io.netty.util.internal.ObjectUtil;
 import io.netty.util.internal.PlatformDependent;
@@ -49,11 +51,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * {@link SingleThreadEventLoop.IoHandler} implementation which register the {@link Channel}'s to a
+ * {@link IoHandler} implementation which register the {@link Channel}'s to a
  * {@link Selector} and so does the multi-plexing of these in the event loop.
  *
  */
-public final class NioHandler implements SingleThreadEventLoop.IoHandler {
+public final class NioHandler implements IoHandler {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioHandler.class);
 
@@ -142,27 +144,27 @@ public final class NioHandler implements SingleThreadEventLoop.IoHandler {
     }
 
     /**
-     * Returns a new {@link SingleThreadEventLoop.IoHandlerFactory} that creates {@link NioHandler} instances.
+     * Returns a new {@link IoHandlerFactory} that creates {@link NioHandler} instances.
      */
-    public static SingleThreadEventLoop.IoHandlerFactory newFactory() {
-        return new SingleThreadEventLoop.IoHandlerFactory() {
+    public static IoHandlerFactory newFactory() {
+        return new IoHandlerFactory() {
             @Override
-            public SingleThreadEventLoop.IoHandler newHandler() {
+            public IoHandler newHandler() {
                 return new NioHandler();
             }
         };
     }
 
     /**
-     * Returns a new {@link SingleThreadEventLoop.IoHandlerFactory} that creates {@link NioHandler} instances.
+     * Returns a new {@link IoHandlerFactory} that creates {@link NioHandler} instances.
      */
-    public static SingleThreadEventLoop.IoHandlerFactory newFactory(final SelectorProvider selectorProvider,
-                                                                    final SelectStrategyFactory selectStrategyFactory) {
+    public static IoHandlerFactory newFactory(final SelectorProvider selectorProvider,
+                                              final SelectStrategyFactory selectStrategyFactory) {
         ObjectUtil.checkNotNull(selectorProvider, "selectorProvider");
         ObjectUtil.checkNotNull(selectStrategyFactory, "selectStrategyFactory");
-        return new SingleThreadEventLoop.IoHandlerFactory() {
+        return new IoHandlerFactory() {
             @Override
-            public SingleThreadEventLoop.IoHandler newHandler() {
+            public IoHandler newHandler() {
                 return new NioHandler(selectorProvider, selectStrategyFactory.newSelectStrategy());
             }
         };
@@ -419,7 +421,7 @@ public final class NioHandler implements SingleThreadEventLoop.IoHandler {
     }
 
     @Override
-    public int run(SingleThreadEventLoop.ExecutionContext runner) {
+    public int run(IoExecutionContext runner) {
         int handled = 0;
         try {
             try {
@@ -715,7 +717,7 @@ public final class NioHandler implements SingleThreadEventLoop.IoHandler {
         }
     }
 
-    private void select(SingleThreadEventLoop.ExecutionContext runner, boolean oldWakenUp) throws IOException {
+    private void select(IoExecutionContext runner, boolean oldWakenUp) throws IOException {
         Selector selector = this.selector;
         try {
             int selectCnt = 0;

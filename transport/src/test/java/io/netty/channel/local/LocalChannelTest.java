@@ -30,6 +30,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.IoHandler;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.SingleThreadEventLoop;
 import io.netty.util.ReferenceCountUtil;
@@ -233,7 +234,7 @@ public class LocalChannelTest {
             @Override
             protected EventLoop newChild(
                     Executor executor, int maxPendingTasks, RejectedExecutionHandler rejectedExecutionHandler,
-                    SingleThreadEventLoop.IoHandler ioHandler, int maxTasksPerRun, Object... args) {
+                    IoHandler ioHandler, int maxTasksPerRun, Object... args) {
                 return new SingleThreadEventLoop(this, executor, ioHandler, maxPendingTasks, rejectedExecutionHandler) {
 
                     @Override

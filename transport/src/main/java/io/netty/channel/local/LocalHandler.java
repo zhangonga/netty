@@ -16,7 +16,9 @@
 package io.netty.channel.local;
 
 import io.netty.channel.Channel;
-import io.netty.channel.SingleThreadEventLoop;
+import io.netty.channel.IoExecutionContext;
+import io.netty.channel.IoHandler;
+import io.netty.channel.IoHandlerFactory;
 import io.netty.util.internal.StringUtil;
 
 import java.util.HashSet;
@@ -24,21 +26,21 @@ import java.util.Set;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * {@link SingleThreadEventLoop.IoHandler} implementation for {@link LocalChannel} and {@link LocalServerChannel}.
+ * {@link IoHandler} implementation for {@link LocalChannel} and {@link LocalServerChannel}.
  */
-public final class LocalHandler implements SingleThreadEventLoop.IoHandler {
+public final class LocalHandler implements IoHandler {
     private final Set<LocalChannelUnsafe> registeredChannels = new HashSet<LocalChannelUnsafe>(64);
     private volatile Thread executionThread;
 
     private LocalHandler() { }
 
     /**
-     * Returns a new {@link SingleThreadEventLoop.IoHandlerFactory} that creates {@link LocalHandler} instances.
+     * Returns a new {@link IoHandlerFactory} that creates {@link LocalHandler} instances.
      */
-    public static SingleThreadEventLoop.IoHandlerFactory newFactory() {
-        return new SingleThreadEventLoop.IoHandlerFactory() {
+    public static IoHandlerFactory newFactory() {
+        return new IoHandlerFactory() {
             @Override
-            public SingleThreadEventLoop.IoHandler newHandler() {
+            public IoHandler newHandler() {
                 return new LocalHandler();
             }
         };
@@ -53,7 +55,7 @@ public final class LocalHandler implements SingleThreadEventLoop.IoHandler {
     }
 
     @Override
-    public int run(SingleThreadEventLoop.ExecutionContext runner) {
+    public int run(IoExecutionContext runner) {
         if (executionThread == null) {
             executionThread = Thread.currentThread();
         }

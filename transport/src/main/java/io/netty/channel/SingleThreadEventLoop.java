@@ -32,14 +32,14 @@ import java.util.concurrent.ThreadFactory;
  */
 public class SingleThreadEventLoop extends SingleThreadEventExecutor implements EventLoop {
 
-    public static final int DEFAULT_MAX_PENDING_TASKS = Math.max(16,
+    protected static final int DEFAULT_MAX_PENDING_TASKS = Math.max(16,
             SystemPropertyUtil.getInt("io.netty.eventLoop.maxPendingTasks", Integer.MAX_VALUE));
 
     // TODO: Is this a sensible default ?
     protected static final int DEFAULT_MAX_TASKS_PER_RUN = Math.max(1,
             SystemPropertyUtil.getInt("io.netty.eventLoop.maxTaskPerRun", 1024 * 4));
 
-    private final ExecutionContext context = new ExecutionContext() {
+    private final IoExecutionContext context = new IoExecutionContext() {
         @Override
         public boolean isTaskReady() {
             assert inEventLoop();
@@ -253,70 +253,4 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
         ioHandler.destroy();
     }
 
-    /**
-     * The execution context for an {@link IoHandler}.
-     * All method must be called from the {@link EventLoop} thread.
-     */
-    public interface ExecutionContext {
-        /**
-         * Returns {@code true} if the {@link EventLoop} contains at least one task that is ready to be
-         * processed without blocking. This can either be normal task or scheduled task that is ready now.
-         */
-        boolean isTaskReady();
-
-        /**
-         * Returns the amount of time left until the scheduled task with the closest dead line should run..
-         */
-        long delayNanos(long currentTimeNanos);
-
-        /**
-         * Returns the absolute point in time (relative to {@link #nanoTime()}) at which the the next
-         * closest scheduled task should run.
-         */
-        long deadlineNanos();
-
-        /**
-         * Returns {@code true} of the {@link EventLoop} on which the {@link IoHandler} runs is shutting down.
-         */
-        boolean isShuttingDown();
-    }
-
-    /**
-     * Factory for {@link IoHandler} instances.
-     */
-    public interface IoHandlerFactory {
-
-        /**
-         * Creates a new {@link IoHandler} instance.
-         */
-        IoHandler newHandler();
-    }
-
-    /**
-     * Handles IO dispatching on a {@link SingleThreadEventLoop}.
-     * All operations except {@link #wakeup(boolean)} <strong>MUST</strong> be executed
-     * on the {@link EventLoop} thread and should never be called from the user-directly.
-     */
-    public interface IoHandler extends Unsafe {
-        /**
-         * Run the IO handled by this {@link IoHandler}. The {@link ExecutionContext} should be used
-         * to ensure we not execute too long and so block the processing of other task that are
-         * scheduled on the {@link EventLoop}. This is done by taking {@link ExecutionContext#delayNanos(long)} or
-         * {@link ExecutionContext#deadlineNanos()} into account.
-         *
-         * @return the number of {@link Channel} for which I/O was handled.
-         */
-        int run(ExecutionContext runner);
-
-        /**
-         * Wakeup the {@link IoHandler}, which means if any operation blocks it should be unblocked and
-         * return as soon as possible.
-         */
-        void  wakeup(boolean inEventLoop);
-
-        /**
-         * Destroy the {@link IoHandler} and free all its resources.
-         */
-        void destroy();
-    }
 }

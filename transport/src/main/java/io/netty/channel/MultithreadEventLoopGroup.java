@@ -53,11 +53,11 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
     /**
      * Create a new instance.
      *
-     * @param ioHandlerFactory  the {@link SingleThreadEventLoop.IoHandlerFactory} to use for creating new
-     *                          {@link SingleThreadEventLoop.IoHandler} instances that will handle the IO for the
+     * @param ioHandlerFactory  the {@link IoHandlerFactory} to use for creating new
+     *                          {@link IoHandler} instances that will handle the IO for the
      *                          {@link EventLoop}.
      */
-    public MultithreadEventLoopGroup(SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory) {
+    public MultithreadEventLoopGroup(IoHandlerFactory ioHandlerFactory) {
         this(0, (Executor) null, ioHandlerFactory);
     }
 
@@ -65,11 +65,11 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      * Create a new instance.
      *
      * @param nThreads          the number of threads that will be used by this instance.
-     * @param ioHandlerFactory  the {@link SingleThreadEventLoop.IoHandlerFactory} to use for creating new
-     *                          {@link SingleThreadEventLoop.IoHandler} instances that will handle the IO for the
+     * @param ioHandlerFactory  the {@link IoHandlerFactory} to use for creating new
+     *                          {@link IoHandler} instances that will handle the IO for the
      *                          {@link EventLoop}.
      */
-    public MultithreadEventLoopGroup(int nThreads, SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory) {
+    public MultithreadEventLoopGroup(int nThreads, IoHandlerFactory ioHandlerFactory) {
         this(nThreads, (Executor) null, ioHandlerFactory);
     }
 
@@ -78,12 +78,12 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param executor          the {@link Executor} to use, or {@code null} if the default should be used.
-     * @param ioHandlerFactory  the {@link SingleThreadEventLoop.IoHandlerFactory} to use for creating new
-     *                          {@link SingleThreadEventLoop.IoHandler} instances that will handle the IO for the
+     * @param ioHandlerFactory  the {@link IoHandlerFactory} to use for creating new
+     *                          {@link IoHandler} instances that will handle the IO for the
      *                          {@link EventLoop}.
      */
     public MultithreadEventLoopGroup(int nThreads, Executor executor,
-                                     SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory) {
+                                     IoHandlerFactory ioHandlerFactory) {
         this(nThreads, executor, ioHandlerFactory,
                 SingleThreadEventLoop.DEFAULT_MAX_PENDING_TASKS, RejectedExecutionHandlers.reject(),
                 SingleThreadEventLoop.DEFAULT_MAX_TASKS_PER_RUN);
@@ -94,12 +94,12 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param threadFactory     the {@link ThreadFactory} to use, or {@code null} if the default should be used.
-     * @param ioHandlerFactory  the {@link SingleThreadEventLoop.IoHandlerFactory} to use for creating new
-     *                          {@link SingleThreadEventLoop.IoHandler} instances that will handle the IO for the
+     * @param ioHandlerFactory  the {@link IoHandlerFactory} to use for creating new
+     *                          {@link IoHandler} instances that will handle the IO for the
      *                          {@link EventLoop}.
      */
     public MultithreadEventLoopGroup(int nThreads, ThreadFactory threadFactory,
-                                     SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory) {
+                                     IoHandlerFactory ioHandlerFactory) {
         this(nThreads, threadFactory, ioHandlerFactory,
                 SingleThreadEventLoop.DEFAULT_MAX_PENDING_TASKS, RejectedExecutionHandlers.reject());
     }
@@ -109,14 +109,14 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param executor          the {@link Executor} to use, or {@code null} if the default should be used.
-     * @param ioHandlerFactory  the {@link SingleThreadEventLoop.IoHandlerFactory} to use for creating new
-     *                          {@link SingleThreadEventLoop.IoHandler} instances that will handle the IO for the
+     * @param ioHandlerFactory  the {@link IoHandlerFactory} to use for creating new
+     *                          {@link IoHandler} instances that will handle the IO for the
      *                          {@link EventLoop}.
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
      */
     public MultithreadEventLoopGroup(int nThreads, Executor executor,
-                                     SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory,
+                                     IoHandlerFactory ioHandlerFactory,
                                      int maxPendingTasks, RejectedExecutionHandler rejectedHandler) {
         this(nThreads, executor, ioHandlerFactory, maxPendingTasks, rejectedHandler,
                 SingleThreadEventLoop.DEFAULT_MAX_TASKS_PER_RUN);
@@ -127,14 +127,14 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param threadFactory     the {@link ThreadFactory} to use, or {@code null} if the default should be used.
-     * @param ioHandlerFactory  the {@link SingleThreadEventLoop.IoHandlerFactory} to use for creating new
-     *                          {@link SingleThreadEventLoop.IoHandler} instances that will handle the IO for the
+     * @param ioHandlerFactory  the {@link IoHandlerFactory} to use for creating new
+     *                          {@link IoHandler} instances that will handle the IO for the
      *                          {@link EventLoop}.
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
      */
     public MultithreadEventLoopGroup(int nThreads, ThreadFactory threadFactory,
-                                     SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory,
+                                     IoHandlerFactory ioHandlerFactory,
                                      int maxPendingTasks, RejectedExecutionHandler rejectedHandler) {
         this(nThreads, threadFactory, ioHandlerFactory, maxPendingTasks, rejectedHandler,
                 SingleThreadEventLoop.DEFAULT_MAX_TASKS_PER_RUN);
@@ -145,8 +145,8 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param executor          the {@link Executor} to use, or {@code null} if the default should be used.
-     * @param ioHandlerFactory  the {@link SingleThreadEventLoop.IoHandlerFactory} to use for creating new
-     *                          {@link SingleThreadEventLoop.IoHandler} instances that will handle the IO for the
+     * @param ioHandlerFactory  the {@link IoHandlerFactory} to use for creating new
+     *                          {@link IoHandler} instances that will handle the IO for the
      *                          {@link EventLoop}.
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
@@ -154,7 +154,7 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      *                          before trying to handle IO again.
      */
     public MultithreadEventLoopGroup(int nThreads, Executor executor,
-                                     SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory,
+                                     IoHandlerFactory ioHandlerFactory,
                                      int maxPendingTasks, RejectedExecutionHandler rejectedHandler,
                                      int maxTasksPerRun) {
         this(nThreads, executor, ioHandlerFactory,
@@ -166,8 +166,8 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param threadFactory     the {@link ThreadFactory} to use, or {@code null} if the default should be used.
-     * @param ioHandlerFactory  the {@link SingleThreadEventLoop.IoHandlerFactory} to use for creating new
-     *                          {@link SingleThreadEventLoop.IoHandler} instances that will handle the IO for the
+     * @param ioHandlerFactory  the {@link IoHandlerFactory} to use for creating new
+     *                          {@link IoHandler} instances that will handle the IO for the
      *                          {@link EventLoop}.
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
@@ -175,7 +175,7 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      *                          before trying to handle IO again.
      */
     public MultithreadEventLoopGroup(int nThreads, ThreadFactory threadFactory,
-                                     SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory,
+                                     IoHandlerFactory ioHandlerFactory,
                                      int maxPendingTasks, RejectedExecutionHandler rejectedHandler,
                                      int maxTasksPerRun) {
         this(nThreads, threadFactory, ioHandlerFactory,
@@ -189,18 +189,18 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param executor          the {@link Executor} to use, or {@code null} if the default should be used.
-     * @param ioHandlerFactory  the {@link SingleThreadEventLoop.IoHandlerFactory} to use for creating new
-     *                          {@link SingleThreadEventLoop.IoHandler} instances that will handle the IO for the
+     * @param ioHandlerFactory  the {@link IoHandlerFactory} to use for creating new
+     *                          {@link IoHandler} instances that will handle the IO for the
      *                          {@link EventLoop}.
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
      * @param maxTasksPerRun    the maximum number of tasks per {@link EventLoop} run that will be processed
      *                          before trying to handle IO again.
      * @param args              extra arguments passed to {@link #newChild(Executor, int, RejectedExecutionHandler,
-     *                          SingleThreadEventLoop.IoHandler, int, Object...)}
+     *                          IoHandler, int, Object...)}
      */
     protected MultithreadEventLoopGroup(int nThreads, Executor executor,
-                                     SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory,
+                                     IoHandlerFactory ioHandlerFactory,
                                      int maxPendingTasks, RejectedExecutionHandler rejectedHandler,
                                      int maxTasksPerRun, Object... args) {
         super(pickThreadCount(nThreads), executor,
@@ -212,18 +212,18 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param threadFactory     the {@link ThreadFactory} to use, or {@code null} if the default should be used.
-     * @param ioHandlerFactory  the {@link SingleThreadEventLoop.IoHandlerFactory} to use for creating new
-     *                          {@link SingleThreadEventLoop.IoHandler} instances that will handle the IO for the
+     * @param ioHandlerFactory  the {@link IoHandlerFactory} to use for creating new
+     *                          {@link IoHandler} instances that will handle the IO for the
      *                          {@link EventLoop}.
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
      * @param maxTasksPerRun    the maximum number of tasks per {@link EventLoop} run that will be processed
      *                          before trying to handle IO again.
      * @param args              extra arguments passed to {@link #newChild(Executor, int, RejectedExecutionHandler,
-     *                          SingleThreadEventLoop.IoHandler, int, Object...)}
+     *                          IoHandler, int, Object...)}
      */
     protected MultithreadEventLoopGroup(int nThreads, ThreadFactory threadFactory,
-                                     SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory,
+                                     IoHandlerFactory ioHandlerFactory,
                                      int maxPendingTasks, RejectedExecutionHandler rejectedHandler,
                                      int maxTasksPerRun, Object... args) {
         super(pickThreadCount(nThreads), threadFactory,
@@ -237,7 +237,7 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
         return nThreads == 0 ? DEFAULT_EVENT_LOOP_THREADS : nThreads;
     }
 
-    private static Object[] merge(SingleThreadEventLoop.IoHandlerFactory ioHandlerFactory,
+    private static Object[] merge(IoHandlerFactory ioHandlerFactory,
                                   int maxTasksPerRun, Object... args) {
         List<Object> argList = new ArrayList<Object>(2 + args.length);
         argList.add(ioHandlerFactory);
@@ -260,7 +260,7 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
     protected final EventLoop newChild(Executor executor, int maxPendingTasks,
                                        RejectedExecutionHandler rejectedExecutionHandler, Object... args) {
         return newChild(executor, maxPendingTasks, rejectedExecutionHandler,
-                ((SingleThreadEventLoop.IoHandlerFactory) args[0]).newHandler(), (Integer) args[1],
+                ((IoHandlerFactory) args[0]).newHandler(), (Integer) args[1],
                 Arrays.copyOfRange(args, 2, args.length));
     }
 
@@ -271,7 +271,7 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      * @param maxPendingTasks           the maximum number of pending tasks.
      * @param rejectedExecutionHandler  the {@link RejectedExecutionHandler} to use when the number of outstanding tasks
      *                                  reach {@code maxPendingTasks}.
-     * @param ioHandler                 the {@link io.netty.channel.SingleThreadEventLoop.IoHandler} to use.
+     * @param ioHandler                 the {@link IoHandler} to use.
      * @param maxTasksPerRun            the maximum number of tasks per {@link EventLoop} run that will be processed
      *                                  before trying to handle IO again.
      * @param args                      any extra args needed to construct the {@link EventLoop}. This will be an empty
@@ -280,7 +280,7 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
      */
     protected EventLoop newChild(Executor executor, int maxPendingTasks,
                                  RejectedExecutionHandler rejectedExecutionHandler,
-                                 SingleThreadEventLoop.IoHandler ioHandler, int maxTasksPerRun,
+                                 IoHandler ioHandler, int maxTasksPerRun,
                                  Object... args) {
         assert args.length == 0;
         return new SingleThreadEventLoop(this, executor, ioHandler, maxPendingTasks,

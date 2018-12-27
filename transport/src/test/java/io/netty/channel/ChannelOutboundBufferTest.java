@@ -139,9 +139,9 @@ public class ChannelOutboundBufferTest {
 
         TestChannel() {
             super(null, new SingleThreadEventLoop(null, Executors.defaultThreadFactory(),
-                    new SingleThreadEventLoop.IoHandler() {
+                    new IoHandler() {
                 @Override
-                public int run(SingleThreadEventLoop.ExecutionContext runner) {
+                public int run(IoExecutionContext runner) {
                     return 0;
                 }
 

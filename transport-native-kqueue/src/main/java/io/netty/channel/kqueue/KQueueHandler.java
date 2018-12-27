@@ -17,9 +17,11 @@ package io.netty.channel.kqueue;
 
 import io.netty.channel.Channel;
 import io.netty.channel.DefaultSelectStrategyFactory;
+import io.netty.channel.IoExecutionContext;
+import io.netty.channel.IoHandler;
+import io.netty.channel.IoHandlerFactory;
 import io.netty.channel.SelectStrategy;
 import io.netty.channel.SelectStrategyFactory;
-import io.netty.channel.SingleThreadEventLoop;
 
 import io.netty.channel.kqueue.AbstractKQueueChannel.AbstractKQueueUnsafe;
 import io.netty.channel.unix.FileDescriptor;
@@ -39,10 +41,10 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import static java.lang.Math.min;
 
 /**
- * {@link SingleThreadEventLoop.IoHandler} which uses kqueue under the covers. Only works on BSD!
+ * {@link IoHandler} which uses kqueue under the covers. Only works on BSD!
  */
 @UnstableApi
-public final class KQueueHandler implements SingleThreadEventLoop.IoHandler {
+public final class KQueueHandler implements IoHandler {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(KQueueHandler.class);
     private static final AtomicIntegerFieldUpdater<KQueueHandler> WAKEN_UP_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(KQueueHandler.class, "wakenUp");
@@ -100,27 +102,27 @@ public final class KQueueHandler implements SingleThreadEventLoop.IoHandler {
     }
 
     /**
-     * Returns a new {@link SingleThreadEventLoop.IoHandlerFactory} that creates {@link KQueueHandler} instances.
+     * Returns a new {@link IoHandlerFactory} that creates {@link KQueueHandler} instances.
      */
-    public static SingleThreadEventLoop.IoHandlerFactory newFactory() {
-        return new SingleThreadEventLoop.IoHandlerFactory() {
+    public static IoHandlerFactory newFactory() {
+        return new IoHandlerFactory() {
             @Override
-            public SingleThreadEventLoop.IoHandler newHandler() {
+            public IoHandler newHandler() {
                 return new KQueueHandler();
             }
         };
     }
 
     /**
-     * Returns a new {@link SingleThreadEventLoop.IoHandlerFactory} that creates {@link KQueueHandler} instances.
+     * Returns a new {@link IoHandlerFactory} that creates {@link KQueueHandler} instances.
      */
-    public static SingleThreadEventLoop.IoHandlerFactory newFactory(final int maxEvents,
-                                                                    final SelectStrategyFactory selectStrategyFactory) {
+    public static IoHandlerFactory newFactory(final int maxEvents,
+                                              final SelectStrategyFactory selectStrategyFactory) {
         ObjectUtil.checkPositiveOrZero(maxEvents, "maxEvents");
         ObjectUtil.checkNotNull(selectStrategyFactory, "selectStrategyFactory");
-        return new SingleThreadEventLoop.IoHandlerFactory() {
+        return new IoHandlerFactory() {
             @Override
-            public SingleThreadEventLoop.IoHandler newHandler() {
+            public IoHandler newHandler() {
                 return new KQueueHandler(maxEvents, selectStrategyFactory.newSelectStrategy());
             }
         };
@@ -174,7 +176,7 @@ public final class KQueueHandler implements SingleThreadEventLoop.IoHandler {
         // So it is not very practical to assert the return value is always >= 0.
     }
 
-    private int kqueueWait(SingleThreadEventLoop.ExecutionContext context, boolean oldWakeup) throws IOException {
+    private int kqueueWait(IoExecutionContext context, boolean oldWakeup) throws IOException {
         // If a task was submitted when wakenUp value was 1, the task didn't get a chance to produce wakeup event.
         // So we need to check task queue again before calling kqueueWait. If we don't, the task might be pended
         // until kqueueWait was timed out. It might be pended until idle timeout if IdleStateHandler existed
@@ -242,7 +244,7 @@ public final class KQueueHandler implements SingleThreadEventLoop.IoHandler {
     }
 
     @Override
-    public int run(SingleThreadEventLoop.ExecutionContext context) {
+    public int run(IoExecutionContext context) {
         int handled = 0;
         try {
             int strategy = selectStrategy.calculateStrategy(selectNowSupplier, context.isTaskReady());
