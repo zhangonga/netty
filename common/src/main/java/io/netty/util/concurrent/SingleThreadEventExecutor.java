@@ -106,7 +106,7 @@ public class SingleThreadEventExecutor extends AbstractScheduledEventExecutor im
      * Create a new instance
      */
     public SingleThreadEventExecutor() {
-        this(null, new DefaultThreadFactory(SingleThreadEventExecutor.class));
+        this(new DefaultThreadFactory(SingleThreadEventExecutor.class));
     }
 
     /**
@@ -115,7 +115,19 @@ public class SingleThreadEventExecutor extends AbstractScheduledEventExecutor im
      * @param threadFactory     the {@link ThreadFactory} which will be used for the used {@link Thread}
      */
     public SingleThreadEventExecutor(ThreadFactory threadFactory) {
-        this(null, threadFactory);
+        this(new ThreadPerTaskExecutor(threadFactory));
+    }
+
+    /**
+     * Create a new instance
+     *
+     * @param threadFactory     the {@link ThreadFactory} which will be used for the used {@link Thread}
+     * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
+     * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
+     */
+    public SingleThreadEventExecutor(ThreadFactory threadFactory,
+            int maxPendingTasks, RejectedExecutionHandler rejectedHandler) {
+        this(new ThreadPerTaskExecutor(threadFactory), maxPendingTasks, rejectedHandler);
     }
 
     /**
@@ -124,64 +136,17 @@ public class SingleThreadEventExecutor extends AbstractScheduledEventExecutor im
      * @param executor          the {@link Executor} which will be used for executing
      */
     public SingleThreadEventExecutor(Executor executor) {
-        this(null, executor);
+        this(executor, DEFAULT_MAX_PENDING_EXECUTOR_TASKS, RejectedExecutionHandlers.reject());
     }
 
     /**
      * Create a new instance
      *
-     * @param parent            the {@link EventExecutorGroup} which is the parent of this instance and belongs to it
-     */
-    public SingleThreadEventExecutor(EventExecutorGroup parent) {
-        this(parent, new DefaultThreadFactory(SingleThreadEventExecutor.class));
-    }
-
-    /**
-     * Create a new instance
-     *
-     * @param parent            the {@link EventExecutorGroup} which is the parent of this instance and belongs to it
-     * @param threadFactory     the {@link ThreadFactory} which will be used for the used {@link Thread}
-     */
-    public SingleThreadEventExecutor(
-            EventExecutorGroup parent, ThreadFactory threadFactory) {
-        this(parent, new ThreadPerTaskExecutor(threadFactory));
-    }
-
-    /**
-     * Create a new instance
-     *
-     * @param parent            the {@link EventExecutorGroup} which is the parent of this instance and belongs to it
-     * @param threadFactory     the {@link ThreadFactory} which will be used for the used {@link Thread}
-     * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
-     * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
-     */
-    public SingleThreadEventExecutor(
-            EventExecutorGroup parent, ThreadFactory threadFactory,
-            int maxPendingTasks, RejectedExecutionHandler rejectedHandler) {
-        this(parent, new ThreadPerTaskExecutor(threadFactory), maxPendingTasks, rejectedHandler);
-    }
-
-    /**
-     * Create a new instance
-     *
-     * @param parent            the {@link EventExecutorGroup} which is the parent of this instance and belongs to it
-     * @param executor          the {@link Executor} which will be used for executing
-     */
-    public SingleThreadEventExecutor(EventExecutorGroup parent, Executor executor) {
-        this(parent, executor, DEFAULT_MAX_PENDING_EXECUTOR_TASKS, RejectedExecutionHandlers.reject());
-    }
-
-    /**
-     * Create a new instance
-     *
-     * @param parent            the {@link EventExecutorGroup} which is the parent of this instance and belongs to it
      * @param executor          the {@link Executor} which will be used for executing
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
      */
-    public SingleThreadEventExecutor(EventExecutorGroup parent, Executor executor,
-                                        int maxPendingTasks, RejectedExecutionHandler rejectedHandler) {
-        super(parent);
+    public SingleThreadEventExecutor(Executor executor, int maxPendingTasks, RejectedExecutionHandler rejectedHandler) {
         this.executor = ObjectUtil.checkNotNull(executor, "executor");
         taskQueue = newTaskQueue(Math.max(16, maxPendingTasks));
         this.addTaskWakesUp = taskQueue instanceof BlockingQueue;
@@ -196,6 +161,9 @@ public class SingleThreadEventExecutor extends AbstractScheduledEventExecutor im
      *
      * Be aware that the implementation of {@link #run()} depends on a {@link BlockingQueue} so you will need to
      * override {@link #run()} as well if you return a non {@link BlockingQueue} from this method.
+     *
+     * As this method is called from within the constructor you can only use the parameters passed into the method when
+     * overriding this method.
      */
     protected Queue<Runnable> newTaskQueue(int maxPendingTasks) {
         return new LinkedBlockingQueue<Runnable>(maxPendingTasks);

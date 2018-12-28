@@ -83,59 +83,54 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
     /**
      * Create a new instance
      *
-     * @param parent            the {@link EventLoopGroup} which is the parent of this instance and belongs to it
      * @param threadFactory     the {@link ThreadFactory} which will be used for the used {@link Thread}
      * @param ioHandler         the {@link IoHandler} to use.
      */
-    public SingleThreadEventLoop(EventLoopGroup parent, ThreadFactory threadFactory, IoHandler ioHandler) {
-        this(parent, threadFactory, ioHandler, DEFAULT_MAX_PENDING_TASKS, RejectedExecutionHandlers.reject());
+    public SingleThreadEventLoop(ThreadFactory threadFactory, IoHandler ioHandler) {
+        this(threadFactory, ioHandler, DEFAULT_MAX_PENDING_TASKS, RejectedExecutionHandlers.reject());
     }
 
     /**
      * Create a new instance
      *
-     * @param parent            the {@link EventLoopGroup} which is the parent of this instance and belongs to it
      * @param executor          the {@link Executor} which will be used to run this {@link EventLoop}.
      * @param ioHandler         the {@link IoHandler} to use.
      */
-    public SingleThreadEventLoop(EventLoopGroup parent, Executor executor, IoHandler ioHandler) {
-        this(parent, executor, ioHandler, DEFAULT_MAX_PENDING_TASKS, RejectedExecutionHandlers.reject());
+    public SingleThreadEventLoop(Executor executor, IoHandler ioHandler) {
+        this(executor, ioHandler, DEFAULT_MAX_PENDING_TASKS, RejectedExecutionHandlers.reject());
     }
 
     /**
      * Create a new instance
      *
-     * @param parent            the {@link EventLoopGroup} which is the parent of this instance and belongs to it
      * @param threadFactory     the {@link ThreadFactory} which will be used for the used {@link Thread}
      * @param ioHandler         the {@link IoHandler} to use.
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
      */
-    public SingleThreadEventLoop(EventLoopGroup parent, ThreadFactory threadFactory,
+    public SingleThreadEventLoop(ThreadFactory threadFactory,
                                  IoHandler ioHandler, int maxPendingTasks,
                                  RejectedExecutionHandler rejectedHandler) {
-        this(parent, threadFactory, ioHandler, maxPendingTasks, rejectedHandler, DEFAULT_MAX_TASKS_PER_RUN);
+        this(threadFactory, ioHandler, maxPendingTasks, rejectedHandler, DEFAULT_MAX_TASKS_PER_RUN);
     }
 
     /**
      * Create a new instance
      *
-     * @param parent            the {@link EventLoopGroup} which is the parent of this instance and belongs to it
      * @param executor          the {@link Executor} which will be used to run this {@link EventLoop}.
      * @param ioHandler         the {@link IoHandler} to use.
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler   the {@link RejectedExecutionHandler} to use.
      */
-    public SingleThreadEventLoop(EventLoopGroup parent, Executor executor,
+    public SingleThreadEventLoop(Executor executor,
                                  IoHandler ioHandler, int maxPendingTasks,
                                  RejectedExecutionHandler rejectedHandler) {
-        this(parent, executor, ioHandler, maxPendingTasks, rejectedHandler, DEFAULT_MAX_TASKS_PER_RUN);
+        this(executor, ioHandler, maxPendingTasks, rejectedHandler, DEFAULT_MAX_TASKS_PER_RUN);
     }
 
     /**
      * Create a new instance
      *
-     * @param parent            the {@link EventLoopGroup} which is the parent of this instance and belongs to it
      * @param threadFactory     the {@link ThreadFactory} which will be used for the used {@link Thread}
      * @param ioHandler         the {@link IoHandler} to use.
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
@@ -143,10 +138,10 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
      * @param maxTasksPerRun    the maximum number of tasks per {@link EventLoop} run that will be processed
      *                          before trying to handle IO again.
      */
-    public SingleThreadEventLoop(EventLoopGroup parent, ThreadFactory threadFactory,
+    public SingleThreadEventLoop(ThreadFactory threadFactory,
                                  IoHandler ioHandler, int maxPendingTasks,
                                  RejectedExecutionHandler rejectedHandler, int maxTasksPerRun) {
-        super(parent, threadFactory, maxPendingTasks, rejectedHandler);
+        super(threadFactory, maxPendingTasks, rejectedHandler);
         this.ioHandler = ObjectUtil.checkNotNull(ioHandler, "ioHandler");
         this.maxTasksPerRun = ObjectUtil.checkPositive(maxTasksPerRun, "maxTasksPerRun");
     }
@@ -154,7 +149,6 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
     /**
      * Create a new instance
      *
-     * @param parent            the {@link EventLoopGroup} which is the parent of this instance and belongs to it
      * @param executor          the {@link Executor} which will be used to run this {@link EventLoop}.
      * @param ioHandler         the {@link IoHandler} to use.
      * @param maxPendingTasks   the maximum number of pending tasks before new tasks will be rejected.
@@ -162,10 +156,10 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
      * @param maxTasksPerRun    the maximum number of tasks per {@link EventLoop} run that will be processed
      *                          before trying to handle IO again.
      */
-    public SingleThreadEventLoop(EventLoopGroup parent, Executor executor,
+    public SingleThreadEventLoop(Executor executor,
                                  IoHandler ioHandler, int maxPendingTasks,
                                  RejectedExecutionHandler rejectedHandler, int maxTasksPerRun) {
-        super(parent, executor, maxPendingTasks, rejectedHandler);
+        super(executor, maxPendingTasks, rejectedHandler);
         this.ioHandler = ObjectUtil.checkNotNull(ioHandler, "ioHandler");
         this.maxTasksPerRun = ObjectUtil.checkPositive(maxTasksPerRun, "maxTasksPerRun");
     }
@@ -175,11 +169,6 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
         // This event loop never calls takeTask()
         return maxPendingTasks == Integer.MAX_VALUE ? PlatformDependent.<Runnable>newMpscQueue()
                 : PlatformDependent.<Runnable>newMpscQueue(maxPendingTasks);
-    }
-
-    @Override
-    public final EventLoopGroup parent() {
-        return (EventLoopGroup) super.parent();
     }
 
     @Override

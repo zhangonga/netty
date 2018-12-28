@@ -1576,11 +1576,6 @@ public class DefaultChannelPipelineTest {
         }
 
         @Override
-        public EventExecutorGroup parent() {
-            return null;
-        }
-
-        @Override
         public boolean inEventLoop(Thread thread) {
             return false;
         }

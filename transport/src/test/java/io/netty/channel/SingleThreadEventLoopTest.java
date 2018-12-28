@@ -464,12 +464,7 @@ public class SingleThreadEventLoopTest {
         final AtomicInteger cleanedUp = new AtomicInteger();
 
         SingleThreadEventLoopA() {
-            super(null, Executors.defaultThreadFactory());
-        }
-
-        @Override
-        public EventLoopGroup parent() {
-            return (EventLoopGroup) super.parent();
+            super(Executors.defaultThreadFactory());
         }
 
         @Override
@@ -506,12 +501,7 @@ public class SingleThreadEventLoopTest {
     private static class SingleThreadEventLoopB extends SingleThreadEventExecutor implements EventLoop {
 
         SingleThreadEventLoopB() {
-            super(null, Executors.defaultThreadFactory());
-        }
-
-        @Override
-        public EventLoopGroup parent() {
-            return (EventLoopGroup) super.parent();
+            super(Executors.defaultThreadFactory());
         }
 
         @Override

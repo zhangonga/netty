@@ -235,7 +235,7 @@ public class LocalChannelTest {
             protected EventLoop newChild(
                     Executor executor, int maxPendingTasks, RejectedExecutionHandler rejectedExecutionHandler,
                     IoHandler ioHandler, int maxTasksPerRun, Object... args) {
-                return new SingleThreadEventLoop(this, executor, ioHandler, maxPendingTasks, rejectedExecutionHandler) {
+                return new SingleThreadEventLoop(executor, ioHandler, maxPendingTasks, rejectedExecutionHandler) {
 
                     @Override
                     protected void run() {

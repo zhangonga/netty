@@ -34,7 +34,7 @@ public class SingleThreadEventExecutorTest {
     public void testWrappedExecutureIsShutdown() {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-        SingleThreadEventExecutor executor = new SingleThreadEventExecutor(null, executorService) {
+        SingleThreadEventExecutor executor = new SingleThreadEventExecutor(executorService) {
             @Override
             protected void run() {
                 while (!confirmShutdown()) {
@@ -75,8 +75,7 @@ public class SingleThreadEventExecutorTest {
     @Test
     public void testThreadProperties() {
         final AtomicReference<Thread> threadRef = new AtomicReference<Thread>();
-        SingleThreadEventExecutor executor = new SingleThreadEventExecutor(
-                null, new DefaultThreadFactory("test")) {
+        SingleThreadEventExecutor executor = new SingleThreadEventExecutor(new DefaultThreadFactory("test")) {
             @Override
             protected void run() {
                 threadRef.set(Thread.currentThread());
@@ -121,8 +120,7 @@ public class SingleThreadEventExecutorTest {
     }
 
     private static void testInvokeInEventLoop(final boolean any, final boolean timeout) {
-        final SingleThreadEventExecutor executor = new SingleThreadEventExecutor(null,
-                Executors.defaultThreadFactory()) {
+        final SingleThreadEventExecutor executor = new SingleThreadEventExecutor(Executors.defaultThreadFactory()) {
             @Override
             protected void run() {
                 while (!confirmShutdown()) {

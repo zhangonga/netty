@@ -495,7 +495,7 @@ public class DefaultPromiseTest {
 
     private static final class TestEventExecutor extends SingleThreadEventExecutor {
         TestEventExecutor() {
-            super(null, Executors.defaultThreadFactory());
+            super(Executors.defaultThreadFactory());
         }
     }
 

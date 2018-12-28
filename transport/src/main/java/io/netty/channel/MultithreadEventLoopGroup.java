@@ -20,6 +20,7 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.MultithreadEventExecutorGroup;
 import io.netty.util.concurrent.RejectedExecutionHandler;
 import io.netty.util.concurrent.RejectedExecutionHandlers;
+import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import io.netty.util.internal.EmptyArrays;
 import io.netty.util.internal.SystemPropertyUtil;
 import io.netty.util.internal.logging.InternalLogger;
@@ -203,7 +204,8 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
                                      IoHandlerFactory ioHandlerFactory,
                                      int maxPendingTasks, RejectedExecutionHandler rejectedHandler,
                                      int maxTasksPerRun, Object... args) {
-        super(pickThreadCount(nThreads), executor,
+        super(pickThreadCount(nThreads),
+                executor == null ? new ThreadPerTaskExecutor(newDefaultThreadFactory()) : executor,
                 maxPendingTasks, rejectedHandler, merge(ioHandlerFactory, maxTasksPerRun, args));
     }
 
@@ -226,8 +228,12 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
                                      IoHandlerFactory ioHandlerFactory,
                                      int maxPendingTasks, RejectedExecutionHandler rejectedHandler,
                                      int maxTasksPerRun, Object... args) {
-        super(pickThreadCount(nThreads), threadFactory,
+        super(pickThreadCount(nThreads), threadFactory == null ? newDefaultThreadFactory() : threadFactory,
                 maxPendingTasks, rejectedHandler, merge(ioHandlerFactory, maxTasksPerRun, args));
+    }
+
+    private static ThreadFactory newDefaultThreadFactory() {
+        return new DefaultThreadFactory(MultithreadEventLoopGroup.class, Thread.MAX_PRIORITY);
     }
 
     /**
@@ -247,11 +253,6 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
     }
 
     @Override
-    protected ThreadFactory newDefaultThreadFactory() {
-        return new DefaultThreadFactory(getClass(), Thread.MAX_PRIORITY);
-    }
-
-    @Override
     public final EventLoop next() {
         return (EventLoop) super.next();
     }
@@ -266,6 +267,9 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
 
     /**
      * Creates a new {@link EventLoop} to use.
+     *
+     * As this method is called from within the constructor you can only use the parameters passed into the method when
+     * overriding this method.
      *
      * @param executor                  the {@link Executor} to use for execution.
      * @param maxPendingTasks           the maximum number of pending tasks.
@@ -283,7 +287,7 @@ public class MultithreadEventLoopGroup extends MultithreadEventExecutorGroup imp
                                  IoHandler ioHandler, int maxTasksPerRun,
                                  Object... args) {
         assert args.length == 0;
-        return new SingleThreadEventLoop(this, executor, ioHandler, maxPendingTasks,
+        return new SingleThreadEventLoop(executor, ioHandler, maxPendingTasks,
                 rejectedExecutionHandler, maxTasksPerRun);
     }
 }

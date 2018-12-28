@@ -61,8 +61,7 @@ public class NioEventLoopTest extends AbstractEventLoopTest {
     @Test
     public void testRebuildSelector() {
         final NioHandler nioHandler = (NioHandler) NioHandler.newFactory().newHandler();
-        EventLoop loop = new SingleThreadEventLoop(
-                null, new DefaultThreadFactory("ioPool"), nioHandler);
+        EventLoop loop = new SingleThreadEventLoop(new DefaultThreadFactory("ioPool"), nioHandler);
         try {
             Channel channel = new NioServerSocketChannel(loop, loop);
             channel.register().syncUninterruptibly();
@@ -126,8 +125,7 @@ public class NioEventLoopTest extends AbstractEventLoopTest {
     @Test
     public void testInterruptEventLoopThread() throws Exception {
         final NioHandler nioHandler = (NioHandler) NioHandler.newFactory().newHandler();
-        EventLoop loop = new SingleThreadEventLoop(
-                null, new DefaultThreadFactory("ioPool"), nioHandler);
+        EventLoop loop = new SingleThreadEventLoop(new DefaultThreadFactory("ioPool"), nioHandler);
         try {
             Selector selector = loop.submit(new Callable<Selector>() {
                 @Override
@@ -180,8 +178,7 @@ public class NioEventLoopTest extends AbstractEventLoopTest {
     @Test(timeout = 3000)
     public void testSelectableChannel() throws Exception {
         final NioHandler nioHandler = (NioHandler) NioHandler.newFactory().newHandler();
-        EventLoop loop = new SingleThreadEventLoop(
-                null, new DefaultThreadFactory("ioPool"), nioHandler);
+        EventLoop loop = new SingleThreadEventLoop(new DefaultThreadFactory("ioPool"), nioHandler);
         try {
             Channel channel = new NioServerSocketChannel(loop, loop);
             channel.register().syncUninterruptibly();
@@ -282,7 +279,7 @@ public class NioEventLoopTest extends AbstractEventLoopTest {
         final NioHandler nioHandler = (NioHandler) NioHandler.newFactory(SelectorProvider.provider(),
                 selectStrategyFactory).newHandler();
 
-        EventLoop loop = new SingleThreadEventLoop(null, new DefaultThreadFactory("ioPool"), nioHandler);
+        EventLoop loop = new SingleThreadEventLoop(new DefaultThreadFactory("ioPool"), nioHandler);
         try {
             Channel channel = new NioServerSocketChannel(loop, loop);
             Selector selector = nioHandler.unwrappedSelector();

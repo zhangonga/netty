@@ -48,10 +48,6 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
     protected AbstractScheduledEventExecutor() {
     }
 
-    protected AbstractScheduledEventExecutor(EventExecutorGroup parent) {
-        super(parent);
-    }
-
     /**
      * The time elapsed since initialization of this class in nanoseconds. This may return a negative number just like
      * {@link System#nanoTime()}.

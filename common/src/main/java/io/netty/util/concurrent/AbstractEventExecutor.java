@@ -36,21 +36,7 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
     static final long DEFAULT_SHUTDOWN_QUIET_PERIOD = 2;
     static final long DEFAULT_SHUTDOWN_TIMEOUT = 15;
 
-    private final EventExecutorGroup parent;
     private final Collection<EventExecutor> selfCollection = Collections.<EventExecutor>singleton(this);
-
-    protected AbstractEventExecutor() {
-        this(null);
-    }
-
-    protected AbstractEventExecutor(EventExecutorGroup parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public EventExecutorGroup parent() {
-        return parent;
-    }
 
     @Override
     public EventExecutor next() {

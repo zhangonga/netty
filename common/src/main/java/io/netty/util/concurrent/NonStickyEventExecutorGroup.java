@@ -224,7 +224,6 @@ public final class NonStickyEventExecutorGroup implements EventExecutorGroup {
         private final int maxTaskExecutePerRun;
 
         NonStickyOrderedEventExecutor(EventExecutor executor, int maxTaskExecutePerRun) {
-            super(executor);
             this.executor = executor;
             this.maxTaskExecutePerRun = maxTaskExecutePerRun;
         }

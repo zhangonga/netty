@@ -138,7 +138,7 @@ public class ChannelOutboundBufferTest {
         private final ChannelConfig config = new DefaultChannelConfig(this);
 
         TestChannel() {
-            super(null, new SingleThreadEventLoop(null, Executors.defaultThreadFactory(),
+            super(null, new SingleThreadEventLoop(Executors.defaultThreadFactory(),
                     new IoHandler() {
                 @Override
                 public int run(IoExecutionContext runner) {
@@ -386,7 +386,7 @@ public class ChannelOutboundBufferTest {
     @Test(timeout = 5000)
     public void testWriteTaskRejected() throws Exception {
         final SingleThreadEventExecutor executor = new SingleThreadEventExecutor(
-                null, new DefaultThreadFactory("executorPool"),
+                new DefaultThreadFactory("executorPool"),
                 1, RejectedExecutionHandlers.reject()) {
 
             @Override

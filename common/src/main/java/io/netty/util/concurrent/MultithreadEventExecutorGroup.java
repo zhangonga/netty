@@ -118,7 +118,7 @@ public class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
         }
 
         if (executor == null) {
-            executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
+            executor = new ThreadPerTaskExecutor(new DefaultThreadFactory(getClass()));
         }
 
         children = new EventExecutor[nThreads];
@@ -168,13 +168,6 @@ public class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
         readonlyChildren = Collections.unmodifiableList(Arrays.asList(children));
     }
 
-    /**
-     * The {@link ThreadFactory} to use if no {@link ThreadFactory} and no {@link Executor} was specified.
-     */
-    protected ThreadFactory newDefaultThreadFactory() {
-        return new DefaultThreadFactory(getClass());
-    }
-
     private final AtomicInteger idx = new AtomicInteger();
 
     /**
@@ -214,14 +207,17 @@ public class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
     }
 
     /**
-     * Create a new EventExecutor which will later then accessible via the {@link #next()}  method. This method will be
+     * Create a new EventExecutor which will later then accessible via the {@link #next()} method. This method will be
      * called for each thread that will serve this {@link MultithreadEventExecutorGroup}.
+     *
+     * As this method is called from within the constructor you can only use the parameters passed into the method when
+     * overriding this method.
      */
     protected EventExecutor newChild(Executor executor,  int maxPendingTasks,
                                      RejectedExecutionHandler rejectedExecutionHandler,
                                      Object... args) {
         assert args.length == 0;
-        return new SingleThreadEventExecutor(this, executor, maxPendingTasks, rejectedExecutionHandler);
+        return new SingleThreadEventExecutor(executor, maxPendingTasks, rejectedExecutionHandler);
     }
 
     @Override

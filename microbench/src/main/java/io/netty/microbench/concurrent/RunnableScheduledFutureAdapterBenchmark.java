@@ -15,7 +15,7 @@
  */
 package io.netty.microbench.concurrent;
 
-import io.netty.channel.EventLoop;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.local.LocalEventLoopGroup;
 import io.netty.microbench.util.AbstractMicrobenchmark;
 import io.netty.util.concurrent.Future;
@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 public class RunnableScheduledFutureAdapterBenchmark extends AbstractMicrobenchmark {
 
-    static final EventLoop executor = new LocalEventLoopGroup(1).next();
+    static final EventLoopGroup executor = new LocalEventLoopGroup(1);
 
     @State(Scope.Thread)
     public static class FuturesHolder {
@@ -69,7 +69,7 @@ public class RunnableScheduledFutureAdapterBenchmark extends AbstractMicrobenchm
 
     @TearDown(Level.Trial)
     public void stop() throws Exception {
-        executor.parent().shutdownGracefully().syncUninterruptibly();
+        executor.shutdownGracefully().syncUninterruptibly();
     }
 
     @Benchmark

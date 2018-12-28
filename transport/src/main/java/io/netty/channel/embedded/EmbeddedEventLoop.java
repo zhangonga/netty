@@ -17,7 +17,6 @@ package io.netty.channel.embedded;
 
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoop;
-import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.AbstractScheduledEventExecutor;
 import io.netty.util.concurrent.Future;
 import io.netty.util.internal.StringUtil;
@@ -53,11 +52,6 @@ final class EmbeddedEventLoop extends AbstractScheduledEventExecutor implements 
     @Override
     public Unsafe unsafe() {
         return unsafe;
-    }
-
-    @Override
-    public EventLoopGroup parent() {
-        return (EventLoopGroup) super.parent();
     }
 
     @Override

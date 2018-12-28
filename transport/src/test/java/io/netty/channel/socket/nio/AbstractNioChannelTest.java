@@ -101,13 +101,7 @@ public abstract class AbstractNioChannelTest<T extends AbstractNioChannel> {
             private final EventLoop eventLoop;
 
             WrappedEventLoop(EventLoop eventLoop) {
-                super(eventLoop.parent());
                 this.eventLoop = eventLoop;
-            }
-
-            @Test
-            public EventLoopGroup parent() {
-                return eventLoop.parent();
             }
 
             @Test
