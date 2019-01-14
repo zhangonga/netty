@@ -35,7 +35,7 @@ public interface IoHandler extends EventLoop.Unsafe {
      * Wakeup the {@link IoHandler}, which means if any operation blocks it should be unblocked and
      * return as soon as possible.
      */
-    void  wakeup(boolean inEventLoop);
+    void wakeup(boolean inEventLoop);
 
     /**
      * Destroy the {@link IoHandler} and free all its resources.

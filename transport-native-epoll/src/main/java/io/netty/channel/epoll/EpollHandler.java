@@ -358,14 +358,6 @@ public class EpollHandler implements IoHandler {
         } catch (Throwable t) {
             handleLoopException(t);
         }
-        // Always handle shutdown even if the loop processing threw an exception.
-        try {
-            if (context.isShuttingDown()) {
-                closeAll();
-            }
-        } catch (Throwable t) {
-            handleLoopException(t);
-        }
         return handled;
     }
 
@@ -470,6 +462,11 @@ public class EpollHandler implements IoHandler {
     @Override
     public final void destroy() {
         try {
+            try {
+                closeAll();
+            } catch (Exception e) {
+                logger.warn("Failed to close all registered Channels", e);
+            }
             try {
                 epollFd.close();
             } catch (IOException e) {

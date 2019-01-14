@@ -483,14 +483,6 @@ public final class NioHandler implements IoHandler {
         } catch (Throwable t) {
             handleLoopException(t);
         }
-        // Always handle shutdown even if the loop processing threw an exception.
-        try {
-            if (runner.isShuttingDown()) {
-                closeAll();
-            }
-        } catch (Throwable t) {
-            handleLoopException(t);
-        }
         return handled;
     }
 
@@ -516,6 +508,11 @@ public final class NioHandler implements IoHandler {
 
     @Override
     public void destroy() {
+        try {
+            closeAll();
+        } catch (Exception e) {
+            logger.warn("Failed to close all registered Channels", e);
+        }
         try {
             selector.close();
         } catch (IOException e) {

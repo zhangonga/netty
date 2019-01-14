@@ -304,20 +304,17 @@ public final class KQueueHandler implements IoHandler {
         } catch (Throwable t) {
             handleLoopException(t);
         }
-        // Always handle shutdown even if the loop processing threw an exception.
-        try {
-            if (context.isShuttingDown()) {
-                closeAll();
-            }
-        } catch (Throwable t) {
-            handleLoopException(t);
-        }
         return handled;
     }
 
     @Override
     public void destroy() {
         try {
+            try {
+                closeAll();
+            } catch (Exception e) {
+                logger.warn("Failed to close all registered Channels", e);
+            }
             try {
                 kqueueFd.close();
             } catch (IOException e) {

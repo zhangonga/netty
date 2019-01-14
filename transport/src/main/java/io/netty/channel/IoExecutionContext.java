@@ -36,9 +36,4 @@ public interface IoExecutionContext {
      * closest scheduled task should run.
      */
     long deadlineNanos();
-
-    /**
-     * Returns {@code true} of the {@link EventLoop} on which the {@link IoHandler} runs is shutting down.
-     */
-    boolean isShuttingDown();
 }

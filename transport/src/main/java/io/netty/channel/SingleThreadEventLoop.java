@@ -57,12 +57,6 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
             assert inEventLoop();
             return SingleThreadEventLoop.this.deadlineNanos();
         }
-
-        @Override
-        public boolean isShuttingDown() {
-            assert inEventLoop();
-            return SingleThreadEventLoop.this.isShuttingDown();
-        }
     };
 
     private final Unsafe unsafe = new Unsafe() {
@@ -241,5 +235,4 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
         assert inEventLoop();
         ioHandler.destroy();
     }
-
 }
