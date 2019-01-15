@@ -41,7 +41,7 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
 
     private final IoExecutionContext context = new IoExecutionContext() {
         @Override
-        public boolean isBlockingAllowed() {
+        public boolean canBlock() {
             assert inEventLoop();
             return !SingleThreadEventLoop.this.hasTasks() && !SingleThreadEventLoop.this.hasScheduledTasks();
         }
@@ -193,7 +193,7 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
         do {
             runIo();
             if (isShuttingDown()) {
-                ioHandler.closeRegistered();
+                ioHandler.prepareToDestroy();
             }
             runAllTasks(maxTasksPerRun);
         } while (!confirmShutdown());

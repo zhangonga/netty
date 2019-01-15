@@ -161,7 +161,7 @@ public class ChannelOutboundBufferTest {
                 }
 
                 @Override
-                public void closeRegistered() {
+                public void prepareToDestroy() {
                     // NOOP
                 }
 

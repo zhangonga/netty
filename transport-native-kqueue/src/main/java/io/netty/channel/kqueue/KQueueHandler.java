@@ -181,7 +181,7 @@ public final class KQueueHandler implements IoHandler {
         // So we need to check task queue again before calling kqueueWait. If we don't, the task might be pended
         // until kqueueWait was timed out. It might be pended until idle timeout if IdleStateHandler existed
         // in pipeline.
-        if (oldWakeup && !context.isBlockingAllowed()) {
+        if (oldWakeup && !context.canBlock()) {
             return kqueueWaitNow();
         }
 
@@ -247,7 +247,7 @@ public final class KQueueHandler implements IoHandler {
     public int run(IoExecutionContext context) {
         int handled = 0;
         try {
-            int strategy = selectStrategy.calculateStrategy(selectNowSupplier, !context.isBlockingAllowed());
+            int strategy = selectStrategy.calculateStrategy(selectNowSupplier, !context.canBlock());
             switch (strategy) {
                 case SelectStrategy.CONTINUE:
                     return 0;
@@ -323,7 +323,7 @@ public final class KQueueHandler implements IoHandler {
     }
 
     @Override
-    public void closeRegistered() {
+    public void prepareToDestroy() {
         try {
             kqueueWaitNow();
         } catch (IOException e) {

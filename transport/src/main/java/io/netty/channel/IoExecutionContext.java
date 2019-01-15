@@ -24,7 +24,7 @@ public interface IoExecutionContext {
      * Returns {@code true} if blocking for IO is allowed or if we should try to do a non-blocking request for IO to be
      * ready.
      */
-    boolean isBlockingAllowed();
+    boolean canBlock();
 
     /**
      * Returns the amount of time left until the scheduled task with the closest dead line should run..

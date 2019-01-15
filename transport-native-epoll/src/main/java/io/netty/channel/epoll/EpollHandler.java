@@ -270,7 +270,7 @@ public class EpollHandler implements IoHandler {
         // So we need to check task queue again before calling epoll_wait. If we don't, the task might be pended
         // until epoll_wait was timed out. It might be pended until idle timeout if IdleStateHandler existed
         // in pipeline.
-        if (oldWakeup && !context.isBlockingAllowed()) {
+        if (oldWakeup && !context.canBlock()) {
             return epollWaitNow();
         }
 
@@ -301,7 +301,7 @@ public class EpollHandler implements IoHandler {
     public final int run(IoExecutionContext context) {
         int handled = 0;
         try {
-            int strategy = selectStrategy.calculateStrategy(selectNowSupplier, !context.isBlockingAllowed());
+            int strategy = selectStrategy.calculateStrategy(selectNowSupplier, !context.canBlock());
             switch (strategy) {
                 case SelectStrategy.CONTINUE:
                     return 0 ;
@@ -377,7 +377,7 @@ public class EpollHandler implements IoHandler {
     }
 
     @Override
-    public void closeRegistered() {
+    public void prepareToDestroy() {
         try {
             epollWaitNow();
         } catch (IOException ignore) {

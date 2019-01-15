@@ -38,14 +38,13 @@ public interface IoHandler extends EventLoop.Unsafe {
     void wakeup(boolean inEventLoop);
 
     /**
-     * Close all registered {@code Channel}s as preparation to destroy this {@link IoHandler} soon.
-     * This method may be called multiple times.
+     * Prepare to destroy this {@link IoHandler}. This method will be called before {@link #destroy()} and may be
+     * called multiple times.
      */
-    void closeRegistered();
+    void prepareToDestroy();
 
     /**
      * Destroy the {@link IoHandler} and free all its resources.
      */
     void destroy();
-
 }
