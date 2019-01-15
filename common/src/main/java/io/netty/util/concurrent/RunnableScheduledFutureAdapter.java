@@ -288,7 +288,7 @@ final class RunnableScheduledFutureAdapter<V> implements RunnableScheduledFuture
         }
         return buf.append(" task: ")
                 .append(callable)
-                .append(" id: ")
+                .append(", id: ")
                 .append(id)
                 .append(", deadline: ")
                 .append(deadlineNanos)
