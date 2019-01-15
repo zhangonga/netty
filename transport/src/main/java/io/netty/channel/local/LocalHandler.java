@@ -59,7 +59,7 @@ public final class LocalHandler implements IoHandler {
         if (executionThread == null) {
             executionThread = Thread.currentThread();
         }
-        if (!runner.isTaskReady()) {
+        if (runner.isBlockingAllowed()) {
             // Just block until there is a task ready to process or wakeup(...) is called.
             LockSupport.parkNanos(this, runner.delayNanos(System.nanoTime()));
         }

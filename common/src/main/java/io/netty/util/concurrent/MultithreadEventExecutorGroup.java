@@ -36,6 +36,7 @@ public class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
     private final List<EventExecutor> readonlyChildren;
     private final AtomicInteger terminatedChildren = new AtomicInteger();
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
+    private final boolean powerOfTwo;
 
     /**
      * Create a new instance.
@@ -122,7 +123,7 @@ public class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
         }
 
         children = new EventExecutor[nThreads];
-
+        powerOfTwo = isPowerOfTwo(children.length);
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
@@ -183,7 +184,7 @@ public class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
      */
     @Override
     public EventExecutor next() {
-        if (isPowerOfTwo(children.length)) {
+        if (powerOfTwo) {
             return children[idx.getAndIncrement() & children.length - 1];
         }
         return children[Math.abs(idx.getAndIncrement() % children.length)];

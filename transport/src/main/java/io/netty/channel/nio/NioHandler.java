@@ -425,7 +425,7 @@ public final class NioHandler implements IoHandler {
         int handled = 0;
         try {
             try {
-                switch (selectStrategy.calculateStrategy(selectNowSupplier, runner.isTaskReady())) {
+                switch (selectStrategy.calculateStrategy(selectNowSupplier, !runner.isBlockingAllowed())) {
                     case SelectStrategy.CONTINUE:
                         return 0;
 
@@ -735,7 +735,7 @@ public final class NioHandler implements IoHandler {
                 // Selector#wakeup. So we need to check task queue again before executing select operation.
                 // If we don't, the task might be pended until select operation was timed out.
                 // It might be pended until idle timeout if IdleStateHandler existed in pipeline.
-                if (runner.isTaskReady() && wakenUp.compareAndSet(false, true)) {
+                if (!runner.isBlockingAllowed() && wakenUp.compareAndSet(false, true)) {
                     selector.selectNow();
                     selectCnt = 1;
                     break;
@@ -744,7 +744,7 @@ public final class NioHandler implements IoHandler {
                 int selectedKeys = selector.select(timeoutMillis);
                 selectCnt ++;
 
-                if (selectedKeys != 0 || oldWakenUp || wakenUp.get() || runner.isTaskReady()) {
+                if (selectedKeys != 0 || oldWakenUp || wakenUp.get() || !runner.isBlockingAllowed()) {
                     // - Selected something,
                     // - waken up by user, or
                     // - the task queue has a pending task.

@@ -41,9 +41,9 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
 
     private final IoExecutionContext context = new IoExecutionContext() {
         @Override
-        public boolean isTaskReady() {
+        public boolean isBlockingAllowed() {
             assert inEventLoop();
-            return SingleThreadEventLoop.this.hasTasks() || SingleThreadEventLoop.this.hasScheduledTasks();
+            return !SingleThreadEventLoop.this.hasTasks() && !SingleThreadEventLoop.this.hasScheduledTasks();
         }
 
         @Override

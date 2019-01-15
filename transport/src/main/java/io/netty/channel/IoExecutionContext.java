@@ -21,10 +21,10 @@ package io.netty.channel;
  */
 public interface IoExecutionContext {
     /**
-     * Returns {@code true} if the {@link EventLoop} contains at least one task that is ready to be
-     * processed without blocking. This can either be normal task or scheduled task that is ready now.
+     * Returns {@code true} if blocking for IO is allowed or if we should try to do a non-blocking request for IO to be
+     * ready.
      */
-    boolean isTaskReady();
+    boolean isBlockingAllowed();
 
     /**
      * Returns the amount of time left until the scheduled task with the closest dead line should run..
