@@ -509,11 +509,6 @@ public final class NioHandler implements IoHandler {
     @Override
     public void destroy() {
         try {
-            closeAll();
-        } catch (Exception e) {
-            logger.warn("Failed to close all registered Channels", e);
-        }
-        try {
             selector.close();
         } catch (IOException e) {
             logger.warn("Failed to close a selector.", e);
@@ -663,7 +658,8 @@ public final class NioHandler implements IoHandler {
         }
     }
 
-    private void closeAll() {
+    @Override
+    public void closeRegistered() {
         selectAgain();
         Set<SelectionKey> keys = selector.keys();
         Collection<AbstractNioChannel> channels = new ArrayList<AbstractNioChannel>(keys.size());

@@ -311,11 +311,6 @@ public final class KQueueHandler implements IoHandler {
     public void destroy() {
         try {
             try {
-                closeAll();
-            } catch (Exception e) {
-                logger.warn("Failed to close all registered Channels", e);
-            }
-            try {
                 kqueueFd.close();
             } catch (IOException e) {
                 logger.warn("Failed to close the kqueue fd.", e);
@@ -327,7 +322,8 @@ public final class KQueueHandler implements IoHandler {
         }
     }
 
-    private void closeAll() {
+    @Override
+    public void closeRegistered() {
         try {
             kqueueWaitNow();
         } catch (IOException e) {

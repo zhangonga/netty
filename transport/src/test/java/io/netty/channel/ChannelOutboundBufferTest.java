@@ -161,6 +161,11 @@ public class ChannelOutboundBufferTest {
                 }
 
                 @Override
+                public void closeRegistered() {
+                    // NOOP
+                }
+
+                @Override
                 public void deregister(Channel channel) {
                     // NOOP
                 }

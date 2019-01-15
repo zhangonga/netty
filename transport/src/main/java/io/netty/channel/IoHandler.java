@@ -16,7 +16,7 @@
 package io.netty.channel;
 
 /**
- * Handles IO dispatching on a {@link SingleThreadEventLoop}.
+ * Handles IO dispatching for an {@link EventLoop}
  * All operations except {@link #wakeup(boolean)} <strong>MUST</strong> be executed
  * on the {@link EventLoop} thread and should never be called from the user-directly.
  */
@@ -29,13 +29,19 @@ public interface IoHandler extends EventLoop.Unsafe {
      *
      * @return the number of {@link Channel} for which I/O was handled.
      */
-    int run(IoExecutionContext runner);
+    int run(IoExecutionContext context);
 
     /**
      * Wakeup the {@link IoHandler}, which means if any operation blocks it should be unblocked and
      * return as soon as possible.
      */
     void wakeup(boolean inEventLoop);
+
+    /**
+     * Close all registered {@code Channel}s as preparation to destroy this {@link IoHandler} soon.
+     * This method may be called multiple times.
+     */
+    void closeRegistered();
 
     /**
      * Destroy the {@link IoHandler} and free all its resources.

@@ -376,7 +376,8 @@ public class EpollHandler implements IoHandler {
         }
     }
 
-    private void closeAll() {
+    @Override
+    public void closeRegistered() {
         try {
             epollWaitNow();
         } catch (IOException ignore) {
@@ -462,11 +463,6 @@ public class EpollHandler implements IoHandler {
     @Override
     public final void destroy() {
         try {
-            try {
-                closeAll();
-            } catch (Exception e) {
-                logger.warn("Failed to close all registered Channels", e);
-            }
             try {
                 epollFd.close();
             } catch (IOException e) {

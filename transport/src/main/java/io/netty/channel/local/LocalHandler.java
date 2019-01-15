@@ -78,11 +78,15 @@ public final class LocalHandler implements IoHandler {
     }
 
     @Override
-    public void destroy() {
+    public void closeRegistered() {
         for (LocalChannelUnsafe unsafe : registeredChannels) {
             unsafe.close(unsafe.voidPromise());
         }
         registeredChannels.clear();
+    }
+
+    @Override
+    public void destroy() {
     }
 
     @Override

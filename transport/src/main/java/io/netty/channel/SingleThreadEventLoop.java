@@ -192,6 +192,9 @@ public class SingleThreadEventLoop extends SingleThreadEventExecutor implements 
         assert inEventLoop();
         do {
             runIo();
+            if (isShuttingDown()) {
+                ioHandler.closeRegistered();
+            }
             runAllTasks(maxTasksPerRun);
         } while (!confirmShutdown());
     }
