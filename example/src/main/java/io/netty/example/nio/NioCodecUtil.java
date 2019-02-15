@@ -52,8 +52,10 @@ public class NioCodecUtil {
         // 写入 Channel
         buffer.flip();
         try {
-        // 注意，不考虑写入超过 Channel 缓存区上限。
-            channel.write(buffer);
+            // Write()方法无法保证能写多少字节到SocketChannel。所以，我们重复调用write()直到Buffer没有要写的字节为止
+            while (buffer.hasRemaining()) {
+                channel.write(buffer);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
