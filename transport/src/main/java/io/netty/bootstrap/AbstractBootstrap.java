@@ -367,6 +367,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         }
     }
 
+    /**
+     * 初始化一个Channel对象，并返回一个ChannelFuture对象。
+     * @return
+     */
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
