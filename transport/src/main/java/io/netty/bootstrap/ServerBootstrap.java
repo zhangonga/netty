@@ -15,18 +15,7 @@
  */
 package io.netty.bootstrap;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelConfig;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.ServerChannel;
+import io.netty.channel.*;
 import io.netty.util.AttributeKey;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
@@ -166,6 +155,32 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             currentChildAttrs = childAttrs.entrySet().toArray(newAttrArray(0));
         }
 
+        // NioServerSocketChannel 增加 handler
+        // NioServerSocketChannel 注册到 bossEventLoop 上时候，会调用 ChannelInitializer#channelRegistered方法
+        // 此时的 ChannelInitializer<Channel>() 中的 Channel 就是 NioServerSocketChannel
+        // 然后会再调用这里实行的 initChannel 方法
+        // 给 NioServerSocketChannel 增加 channelHandler 和 ServerBootstrapAcceptor
+        // ServerBootStrapAccepter 为什么要异步加入 参考 https://github.com/lightningMan/netty/commit/4638df20628a8987c8709f0f8e5f3679a914ce1a
+        // 例如：下边代码，就有可能到用户配置的服务端handler 在 ServerBootStrapAccepter 之后，这是不应该的
+        /**
+         * b.handler(new ChannelInitializer<Channel>() {
+         *
+         *     @Override
+         *     protected void initChannel(Channel ch) {
+         *         final ChannelPipeline pipeline = ch.pipeline();
+         *         ch.eventLoop().execute(new Runnable() {
+         *             @Override
+         *             public void run() {
+         *                 pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+         *             }
+         *         });
+         *     }
+         *
+         * });
+         */
+        // 为什么ServerBootstrapAcceptor 要用 ChannelInitializer 而不直接添加到, 而不是直接异步增加到 NioServerSocketChannel.eventLoop()
+        // 因为此时的 Channel 还没注册到 EventLoop 中，会报错的
+        // 综上，这里才会这么绕
         p.addLast(new ChannelInitializer<Channel>() {
             @Override
             public void initChannel(final Channel ch) throws Exception {
