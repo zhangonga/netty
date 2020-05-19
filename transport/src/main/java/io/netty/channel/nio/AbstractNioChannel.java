@@ -19,14 +19,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.AbstractChannel;
+import io.netty.channel.*;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelException;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.ConnectTimeoutException;
-import io.netty.channel.EventLoop;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
 import io.netty.util.internal.ThrowableUtil;
@@ -35,11 +29,7 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.io.IOException;
 import java.net.SocketAddress;
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.ConnectionPendingException;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
+import java.nio.channels.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -237,6 +227,13 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             return javaChannel();
         }
 
+        /**
+         * io.netty.bootstrap.Bootstrap#connect(java.lang.String, int)，最终调用这里
+         *
+         * @param remoteAddress
+         * @param localAddress
+         * @param promise
+         */
         @Override
         public final void connect(
                 final SocketAddress remoteAddress, final SocketAddress localAddress, final ChannelPromise promise) {
@@ -262,7 +259,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                     requestedRemoteAddress = remoteAddress;
 
                     // Schedule connect timeout.
-                    // 使用 EventLoop 发起定时任务，监听连接远程地址超时。若连接超时，则回调通知 connectPromise 超时异常。
+                    // 使用 EventLoop 发起定时任务，监听连接远程地址超时。若连接超时，则回调通知 connectPromise 超时异常 ConnectTimeoutException。
                     int connectTimeoutMillis = config().getConnectTimeoutMillis();
                     if (connectTimeoutMillis > 0) {
                         connectTimeoutFuture = eventLoop().schedule(new Runnable() {
@@ -286,6 +283,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                                 if (connectTimeoutFuture != null) {
                                     connectTimeoutFuture.cancel(false);
                                 }
+                                // connectPromise 置空， 客户端 Channel 可以发起下一次连接。
                                 connectPromise = null;
                                 close(voidPromise());
                             }
@@ -340,6 +338,9 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             closeIfClosed();
         }
 
+        /**
+         * 而该方法通过 Selector 轮询到 SelectionKey.OP_CONNECT 事件时，进行触发。调用栈如下图：
+         */
         @Override
         public final void finishConnect() {
             // Note this method is invoked by the event loop only if the connection attempt was
@@ -401,6 +402,9 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         boolean selected = false;
         for (; ; ) {
             try {
+                // javaChannel 获取 nio channel， unwrappedSelector 获取 nio selector, 当前netty channel  对象作为附件
+                // 每个netty channel 关联一个 nio channel， 每个eventLoop 关联一个 selector, 所以一个eventLoop 关联多个 channel
+                // 至于为什么这里感兴趣事件是0，因为这个方法是多态的，不同的netty channel 会通过 SelectionKey#interestOps(int ops)来修改各自感兴趣的监听
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;
             } catch (CancelledKeyException e) {

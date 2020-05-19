@@ -16,16 +16,7 @@
 package io.netty.channel.socket.nio;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelException;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelOutboundBuffer;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.EventLoop;
-import io.netty.channel.FileRegion;
-import io.netty.channel.RecvByteBufAllocator;
+import io.netty.channel.*;
 import io.netty.channel.nio.AbstractNioByteChannel;
 import io.netty.channel.socket.DefaultSocketChannelConfig;
 import io.netty.channel.socket.ServerSocketChannel;
@@ -304,26 +295,42 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
     @Override
     protected boolean doConnect(SocketAddress remoteAddress, SocketAddress localAddress) throws Exception {
         if (localAddress != null) {
+            // 非空绑定本地地址，为空，系统随机分配一个本地地址
             doBind0(localAddress);
         }
 
+        // 执行是否成功
         boolean success = false;
         try {
+            // 连接远程地址
             boolean connected = SocketUtils.connect(javaChannel(), remoteAddress);
+            // 如果连接未完成，则关注连接事件
             if (!connected) {
                 selectionKey().interestOps(SelectionKey.OP_CONNECT);
             }
+            // 标记执行成功
             success = true;
             return connected;
         } finally {
+            // 如果连接失败，则关闭 channel
             if (!success) {
                 doClose();
             }
         }
     }
 
+    /**
+     * while (!socketChannel.finishConnect()) {
+     * <p>
+     * log.info("客户端连接中......");
+     * }
+     *
+     * @throws Exception
+     */
     @Override
     protected void doFinishConnect() throws Exception {
+        // 调用 nio  channel 的 finishConnect
+        // 阻塞到真的连接
         if (!javaChannel().finishConnect()) {
             throw new Error();
         }

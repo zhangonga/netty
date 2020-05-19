@@ -27,11 +27,7 @@ import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetSocketAddress;
-import java.net.NoRouteToHostException;
-import java.net.SocketAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NotYetConnectedException;
 import java.util.concurrent.Executor;
@@ -461,9 +457,11 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
         @Override
         public final void register(EventLoop eventLoop, final ChannelPromise promise) {
+            // eventLoop 不能为空
             if (eventLoop == null) {
                 throw new NullPointerException("eventLoop");
             }
+
             if (isRegistered()) {
                 promise.setFailure(new IllegalStateException("registered to an event loop already"));
                 return;
@@ -476,6 +474,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             AbstractChannel.this.eventLoop = eventLoop;
 
+            // 是当前eventLoop 线程，则直接注册
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
@@ -538,6 +537,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
         @Override
         public final void bind(final SocketAddress localAddress, final ChannelPromise promise) {
+            // 判断当前channel 是否已注册，且是否在当前线程
             assertEventLoop();
 
             if (!promise.setUncancellable() || !ensureOpen(promise)) {
@@ -557,15 +557,27 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                         "address (" + localAddress + ") anyway as requested.");
             }
 
+            // channel 是否激活，此时一般是false
             boolean wasActive = isActive();
             try {
                 doBind(localAddress);
+                // 最终调用 nioServerSocketChannel 的 doBind 方法
+                /*@Override
+                    protected void doBind(SocketAddress localAddress) throws Exception {
+                        if (PlatformDependent.javaVersion() >= 7) {
+                            // javaChannel() 获取 对应的JDK NIO 的 ServerSocketChannel 的bind
+                            javaChannel().bind(localAddress, config.getBacklog());
+                        } else {
+                            javaChannel().socket().bind(localAddress, config.getBacklog());
+                        }
+                    }*/
             } catch (Throwable t) {
                 safeSetFailure(promise, t);
                 closeIfClosed();
                 return;
             }
 
+            // 如果channel是新激活的，则触发通知channel 已激活的事件
             if (!wasActive && isActive()) {
                 invokeLater(new Runnable() {
                     @Override
@@ -575,6 +587,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 });
             }
 
+            // 回调通知激活成功
             safeSetSuccess(promise);
         }
 
@@ -841,18 +854,22 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
         @Override
         public final void beginRead() {
+            // 判断是否在 EventLoop 的线程中。
             assertEventLoop();
 
+            // Channel 必须激活
             if (!isActive()) {
                 return;
             }
 
+            // 执行开始读取
             try {
                 doBeginRead();
             } catch (final Exception e) {
                 invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        // 触发异常事件
                         pipeline.fireExceptionCaught(e);
                     }
                 });
