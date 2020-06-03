@@ -30,14 +30,30 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
 
+    /**
+     * EventExecutor 数组
+     */
     private final EventExecutor[] children;
+    /**
+     * 不可变的 EventExecutor 集合
+     */
     private final Set<EventExecutor> readonlyChildren;
+    /**
+     * 已终止的 EventExecutor 数量
+     */
     private final AtomicInteger terminatedChildren = new AtomicInteger();
+    /**
+     * 终止 EventExecutor 的 Future
+     */
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
+    /**
+     * EventExecutor 选择器
+     */
     private final EventExecutorChooserFactory.EventExecutorChooser chooser;
 
     /**
      * Create a new instance.
+     * NioEventLoopGroup 父类构造方法
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param threadFactory     the ThreadFactory to use, or {@code null} if the default should be used.
@@ -49,6 +65,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
     /**
      * Create a new instance.
+     * NioEventLoopGroup 父类构造方法
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param executor          the Executor to use, or {@code null} if the default should be used.
@@ -60,6 +77,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
     /**
      * Create a new instance.
+     * NioEventLoopGroup 父类构造方法
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param executor          the Executor to use, or {@code null} if the default should be used.
@@ -71,22 +89,30 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
         if (nThreads <= 0) {
             throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
         }
-
+        // 创建执行器
         if (executor == null) {
+            // 顾名思义，每一个任务一个独立线程的执行器，NioEventLoopGroup 里的 NioEventLoop 包含的这一个 executor, 每次往 eventLoop 提交任务的时候，这个executor 都会创建一个新的线程来处理而已
+            // 因为 eventLoop 有限，所以线程也就有限
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
 
+        /**
+         * 创建 EventExecutor 数组
+         */
         children = new EventExecutor[nThreads];
 
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
+                // 创建 EventExecutor 对象， newChild 模板方法，我创建 NioEventLoopGroup 就调用 io.netty.channel.nio.NioEventLoopGroup.newChild 方法
+                // 则创建一个 NioEventLoop 对象，返回
                 children[i] = newChild(executor, args);
                 success = true;
             } catch (Exception e) {
                 // TODO: Think about if this is a good exception type
                 throw new IllegalStateException("failed to create a child event loop", e);
             } finally {
+                // 如果 EventExecutor 对象创建失败，则关闭所有已创建的 EventExecutor
                 if (!success) {
                     for (int j = 0; j < i; j ++) {
                         children[j].shutdownGracefully();
@@ -107,24 +133,39 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
                 }
             }
         }
-
+        // 创建 EventExecutor 选择器，如果 EventExecutor 数量为2的次方，则使用 PowerOfTwoEventExecutorChooser，否则使用 GenericEventExecutorChooser
+        // PowerOfTwoEventExecutorChooser
+        // 4 = 2的2次方，4-1 = 3 = 011
+        // 0=000 & 011 = 0
+        // 1=001 & 011 = 1
+        // 2=010 & 011 = 2
+        // 3=011 & 011 = 3
+        // 4=100 & 011 = 0
+        // 5=101 & 011 = 1
+        //
+        // GenericEventExecutorChooser 获取数字，直接与数组长度取模，因为 & 比 % 的性能高很多，所以建议把数组长度定义为2的次方
         chooser = chooserFactory.newChooser(children);
 
+        // 创建监听器，用于 EventExecutor 终止时监听
         final FutureListener<Object> terminationListener = new FutureListener<Object>() {
             @Override
             public void operationComplete(Future<Object> future) throws Exception {
+                // 每当监听到一个 EventExecutor 关闭，就 terminatedChildren + 1，当全部关闭后，设置结果，并通知监听器们
+                // 所有的 EventExecutor 都有 private final Promise<?> terminationFuture = new DefaultPromise<Void>(GlobalEventExecutor.INSTANCE);
                 if (terminatedChildren.incrementAndGet() == children.length) {
                     terminationFuture.setSuccess(null);
                 }
             }
         };
-
+        // 设置监听到每个 EventExecutor 上
         for (EventExecutor e: children) {
             e.terminationFuture().addListener(terminationListener);
         }
 
+        // 创建只读 EventExecutor 组
         Set<EventExecutor> childrenSet = new LinkedHashSet<EventExecutor>(children.length);
         Collections.addAll(childrenSet, children);
+        // 不可修改的 set
         readonlyChildren = Collections.unmodifiableSet(childrenSet);
     }
 
