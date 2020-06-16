@@ -26,21 +26,25 @@ public interface EventExecutor extends EventExecutorGroup {
 
     /**
      * Returns a reference to itself.
+     * 返回自己
      */
     @Override
     EventExecutor next();
 
     /**
+     * 返回所属 EventExecutorGroup
      * Return the {@link EventExecutorGroup} which is the parent of this {@link EventExecutor},
      */
     EventExecutorGroup parent();
 
     /**
+     * 当前线程是否在 eventLoop 线程中
      * Calls {@link #inEventLoop(Thread)} with {@link Thread#currentThread()} as argument
      */
     boolean inEventLoop();
 
     /**
+     * 当前线程是否在 eventLoop 线程中
      * Return {@code true} if the given {@link Thread} is executed in the event loop,
      * {@code false} otherwise.
      */
@@ -48,10 +52,12 @@ public interface EventExecutor extends EventExecutorGroup {
 
     /**
      * Return a new {@link Promise}.
+     * 创建一个 Promise 对象
      */
     <V> Promise<V> newPromise();
 
     /**
+     * 创建一个 ProgressivePromise 对象
      * Create a new {@link ProgressivePromise}.
      */
     <V> ProgressivePromise<V> newProgressivePromise();
